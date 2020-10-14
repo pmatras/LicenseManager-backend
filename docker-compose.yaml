@@ -1,0 +1,32 @@
+version: "3"
+services:
+
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    ports:
+      - 9801:5432
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=license-manager
+    volumes:
+      - .postgres-data:/var/lib/postgresql/data
+    hostname: license-manager-postgres
+    restart: on-failure
+
+  backend:
+    build: ./backend
+    image: license-manager/backend:0.0.1
+    container_name: backend
+    ports:
+      - 9800:9800
+    environment:
+      - POSTGRES_DB_URL=postgres:5432
+      - POSTGRES_DB_NAME=license-manager
+      - POSTGRES_DB_USERNAME=user
+      - POSTGRES_DB_PASSWORD=password
+    depends_on:
+      - postgres
+    hostname: license-manager-backend
+    restart: on-failure
