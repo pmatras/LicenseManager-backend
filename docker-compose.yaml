@@ -22,6 +22,9 @@ services:
     ports:
       - 9800:9800
     environment:
+      - KEYSTORE_NAME=license-manager
+      - KEYSTORE_PASSWORD=password
+      - KEYSTORE_ALIAS=license-manager
       - POSTGRES_DB_URL=postgres:5432
       - POSTGRES_DB_NAME=license-manager
       - POSTGRES_DB_USERNAME=user
