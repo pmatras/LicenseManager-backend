@@ -49,7 +49,8 @@ public class AuthorizationTokenService {
     }
 
     public boolean isTokenValid(Token token) {
-        return token.getExpirationDate().isBefore(LocalDateTime.now());
+        return LocalDateTime.now()
+                .isBefore(token.getExpirationDate());
     }
 
     public String generateToken() {
