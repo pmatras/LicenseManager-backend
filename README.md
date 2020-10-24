@@ -20,7 +20,7 @@ Engineer's Thesis project repository
     ```
     You can also pass explicitly docker-compose config file by passing ``-f/--file`` argument followed by path to config file
     ```
-    docker-compose --project-name -f docker-compose.yaml license-manager up
+    docker-compose --project-name license-manager -f docker-compose.yaml up
     ```
     To run containers in "detached" mode just add ``-d`` argument at the end of command.
 
