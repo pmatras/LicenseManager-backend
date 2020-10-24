@@ -35,5 +35,8 @@ Engineer's Thesis project repository
     ```
     docker-compose -f docker-compose.yaml down
     ```
+    * **IMPORTANT NOTE** - docker-compose will also start container running mailhog image which is SMTP mail server for testing purposes. If you don't want to use mailhog and instead 
+    delivery e-mails from license-manager to recipients using real SMTP servers just delete mailhog service from [docker-compose.yaml](./docker-compose.yaml) file and edit
+    mail properties defined in [application.properties](./backend/src/main/resources/application.properties) to satisfy your requirements
 
 If you want to run application locally, you have to define environment variables specified in [application.properties](./backend/src/main/resources/application.properties) or edit this file with direct values of config directives.
