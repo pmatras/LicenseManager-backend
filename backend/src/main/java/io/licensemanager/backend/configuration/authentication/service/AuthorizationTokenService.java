@@ -54,7 +54,7 @@ public class AuthorizationTokenService {
 
     public String generateToken() {
         SecureRandom random = new SecureRandom();
-        byte bytes[] = new byte[TOKEN_BYTES];
+        byte[] bytes = new byte[TOKEN_BYTES];
         random.nextBytes(bytes);
 
         return Sha512DigestUtils.shaHex(bytes);
