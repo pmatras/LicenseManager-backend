@@ -49,3 +49,4 @@ services:
       - mail-server
     hostname: license-manager-backend
     restart: on-failure
+    
