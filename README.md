@@ -23,5 +23,17 @@ Engineer's Thesis project repository
     docker-compose --project-name license-manager -f docker-compose.yaml up
     ```
     To run containers in "detached" mode just add ``-d`` argument at the end of command.
+     ```
+    docker-compose --project-name license-manager -f docker-compose.yaml up -d
+    ```
+
+    To force containers rebuild use ``--build argument``:
+    ```
+    docker-compose --project-name license-manager -f docker-compose.yaml up --build
+    ```
+    To stop all containers just run command:
+    ```
+    docker-compose -f docker-compose.yaml down
+    ```
 
 If you want to run application locally, you have to define environment variables specified in [application.properties](./backend/src/main/resources/application.properties) or edit this file with direct values of config directives.
