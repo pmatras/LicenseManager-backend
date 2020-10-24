@@ -4,11 +4,12 @@ import io.licensemanager.backend.entity.Token;
 import io.licensemanager.backend.entity.User;
 import io.licensemanager.backend.repository.TokenRepository;
 import io.licensemanager.backend.util.TimeTokensParser;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.token.Sha512DigestUtils;
 import org.springframework.stereotype.Service;
 
@@ -19,20 +20,19 @@ import java.time.temporal.TemporalAmount;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AuthorizationTokenService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthorizationTokenService.class);
 
     private final int TOKEN_BYTES = 256;
-    private final String TOKEN_TTL_KEY = "token.ttl";
-    private final TemporalAmount TOKEN_TTL_VALUE;
 
+    private TemporalAmount TOKEN_TTL_VALUE;
     private final TokenRepository tokenRepository;
 
-    @Autowired
-    public AuthorizationTokenService(final TokenRepository tokenRepository, Environment env) {
-        this.tokenRepository = tokenRepository;
-        TOKEN_TTL_VALUE = TimeTokensParser.parseTimeToken(env.getProperty(TOKEN_TTL_KEY));
+    @Value("${token.ttl:24h}")
+    public void setTokenTTLValue(String tokenTTLValue) {
+        this.TOKEN_TTL_VALUE = TimeTokensParser.parseTimeToken(tokenTTLValue);
     }
 
     public Optional<String> parseTokenFromRequest(HttpServletRequest request, final String authHeader, final String tokenType) {
