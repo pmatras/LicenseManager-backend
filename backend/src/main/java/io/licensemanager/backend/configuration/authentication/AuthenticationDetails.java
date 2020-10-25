@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.licensemanager.backend.entity.Role;
 import io.licensemanager.backend.entity.User;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,6 +18,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Data
+@EqualsAndHashCode
 public class AuthenticationDetails implements UserDetails {
 
     private static Logger logger = LoggerFactory.getLogger(AuthenticationDetails.class);
@@ -95,13 +97,5 @@ public class AuthenticationDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return this.isActive;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AuthenticationDetails that = (AuthenticationDetails) o;
-        return id.equals(that.id);
     }
 }
