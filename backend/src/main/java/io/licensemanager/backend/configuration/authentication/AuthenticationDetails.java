@@ -57,11 +57,22 @@ public class AuthenticationDetails implements UserDetails {
     }
 
     public static AuthenticationDetails build(User user) {
-        List<GrantedAuthority> grantedAuthorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName()))
+        List<GrantedAuthority> grantedRoles = user.getRoles()
+                .stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
                 .collect(Collectors.toList());
 
-        return new AuthenticationDetails(user, grantedAuthorities);
+        List<GrantedAuthority> grantedPermissions = user.getRoles()
+                .stream()
+                .flatMap(role ->
+                        role.getPermissions()
+                                .stream().
+                                map(permission -> new SimpleGrantedAuthority("PERMISSION_" + permission)))
+                .collect(Collectors.toList());
+
+        grantedRoles.addAll(grantedPermissions);
+        
+        return new AuthenticationDetails(user, grantedRoles);
     }
 
     @Override
