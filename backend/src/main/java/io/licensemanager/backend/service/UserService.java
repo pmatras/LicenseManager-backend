@@ -30,7 +30,7 @@ public class UserService {
         return !userRepository.existsByUsername(username) && !userRepository.existsByEmail(email);
     }
 
-    public boolean createNewUser(final UserRegistrationRequest registrationRequest) {
+    public User createNewUser(final UserRegistrationRequest registrationRequest) {
         User user = new User();
         user.setUsername(registrationRequest.getUsername());
         user.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
@@ -43,8 +43,6 @@ public class UserService {
         user.setIsAccountActivatedByAdmin(false);
         user.setIsActive(true);
 
-        User createdUser = userRepository.save(user);
-
-        return createdUser.getUsername().equals(registrationRequest.getUsername());
+        return userRepository.save(user);
     }
 }
