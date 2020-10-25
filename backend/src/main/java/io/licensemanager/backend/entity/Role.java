@@ -22,7 +22,7 @@ public class Role {
 
     @ElementCollection
     @CollectionTable(
-            name = "role_permissions",
+            name = "roles_permissions",
             joinColumns = @JoinColumn(name = "role_id")
     )
     @Column(name = "permission")
