@@ -1,4 +1,10 @@
 version: "3"
+
+networks:
+  backend:
+    labels:
+      description: backend services network
+ 
 services:
 
   postgres:
@@ -13,6 +19,23 @@ services:
     volumes:
       - .postgres-data:/var/lib/postgresql/data
     hostname: license-manager-postgres
+    networks:
+      - backend
+    restart: on-failure
+
+  mail-server:
+    image: mailhog/mailhog:v1.0.1
+    container_name: mail-server
+    ports:
+      - 9802:1025
+      - 9803:8025
+    environment: 
+      - MH_HOSTNAME=mail.license-manager
+      - MH_STORAGE=maildir
+      - MH_MAILDIR_PATH=mailhog/e-mails
+    hostname: license-manager-mail-server
+    networks:
+      - backend
     restart: on-failure
 
   backend:
@@ -29,7 +52,13 @@ services:
       - POSTGRES_DB_NAME=license-manager
       - POSTGRES_DB_USERNAME=user
       - POSTGRES_DB_PASSWORD=password
+      - MAIL_SERVER_HOST=mail-server
+      - MAIL_SERVER_PORT=1025
     depends_on:
       - postgres
+      - mail-server
     hostname: license-manager-backend
+    networks:
+      - backend
     restart: on-failure
+    
