@@ -53,9 +53,9 @@ public class AuthorizationTokenService {
                 .isBefore(token.getExpirationDate());
     }
 
-    public String getAuthorizationTokenForUser(String userAgent) {
+    public String getAuthorizationTokenForUser(Long userId, String userAgent) {
         if (StringUtils.isNotEmpty(userAgent)) {
-            Optional<Token> token = tokenRepository.findByUserAgent(userAgent);
+            Optional<Token> token = tokenRepository.findByUserIdAndUserAgent(userId, userAgent);
             if (token.isPresent()) {
                 Token foundToken = token.get();
                 if (isTokenValid(foundToken)) {

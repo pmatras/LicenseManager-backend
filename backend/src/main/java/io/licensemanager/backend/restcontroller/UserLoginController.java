@@ -65,10 +65,10 @@ public class UserLoginController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String token = tokenService.getAuthorizationTokenForUser(userAgent);
         Optional<User> user = userService.findUserByUsername(loginRequest.getUsername());
         if (user.isPresent()) {
             User authenticatedUser = user.get();
+            String token = tokenService.getAuthorizationTokenForUser(authenticatedUser.getId(), userAgent);
             tokenService.assignTokenToUser(token, userAgent, authenticatedUser);
 
             return ResponseEntity.ok(new UserLoginResponse(
