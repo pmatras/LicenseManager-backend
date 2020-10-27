@@ -10,7 +10,6 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.Set;
 
 
@@ -34,7 +33,7 @@ public class User {
     private String password;
 
     @ManyToMany(
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+            cascade = {CascadeType.MERGE},
             fetch = FetchType.LAZY
     )
     @JoinTable(
@@ -42,7 +41,7 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<Role> roles = Collections.EMPTY_SET;
+    private Set<Role> roles;
 
     @Email(message = "Please enter valid e-mail address")
     @Column(nullable = false, unique = true)
