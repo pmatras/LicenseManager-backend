@@ -69,7 +69,7 @@ public class AuthorizationTokenService {
         token.setExpirationDate(currentDate.plus(TOKEN_TTL_VALUE));
         token.setCreationDate(currentDate);
         token.setUser(user);
-        token.setUserUA(userAgent);
+        token.setUserAgent(userAgent);
 
         tokenRepository.save(token);
     }

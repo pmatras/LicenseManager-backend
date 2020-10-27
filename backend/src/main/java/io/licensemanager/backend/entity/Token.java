@@ -29,5 +29,5 @@ public class Token {
     @ManyToOne(fetch = FetchType.EAGER)
     private User user;
 
-    private String userUA;
+    private String userAgent;
 }
