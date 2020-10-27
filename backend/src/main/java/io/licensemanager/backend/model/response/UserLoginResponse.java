@@ -7,7 +7,7 @@ import java.util.Set;
 
 @AllArgsConstructor
 @Data
-public class LoginResponse {
+public class UserLoginResponse {
     private String message;
     private String username;
     private String authorizationToken;
