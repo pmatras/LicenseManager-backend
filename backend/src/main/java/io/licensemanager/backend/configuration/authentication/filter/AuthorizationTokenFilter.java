@@ -39,8 +39,10 @@ public class AuthorizationTokenFilter extends OncePerRequestFilter {
         try {
             Optional<String> tokenValue = tokenService.parseTokenFromRequest(request, AUTHORIZATION_HEADER, AUTHORIZATION_TOKEN_TYPE);
             if (tokenValue.isPresent()) {
+                logger.debug("Found authorization token in request's header");
                 Optional<Token> token = tokenService.findTokenByValue(tokenValue.get());
                 if (token.isPresent() && tokenService.isTokenValid(token.get())) {
+                    logger.debug("Authorization token is valid");
                     User user = token.get().getUser();
 
                     UserDetails userDetails = authenticationDetailsService.loadUserByUsername(user.getUsername());
@@ -51,7 +53,13 @@ public class AuthorizationTokenFilter extends OncePerRequestFilter {
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else if (!token.isPresent()) {
+                    logger.warn("Detected fraud or already purged token in request's header");
+                } else {
+                    logger.error("Detected request with expired authorization token");
                 }
+            } else {
+                logger.warn("Detected request without authorization token");
             }
         } catch (Exception e) {
             logger.error("Exception occurred while parsing authorization token from request, reason: {}", e.getMessage());
