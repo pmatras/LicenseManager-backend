@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.licensemanager.backend.entity.Role;
 import io.licensemanager.backend.entity.User;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,9 +18,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Data
+@EqualsAndHashCode
 public class AuthenticationDetails implements UserDetails {
 
     private static Logger logger = LoggerFactory.getLogger(AuthenticationDetails.class);
+
+    private static String ROLE_PREFIX = "ROLE_";
+    private static String PERMISSION_PREFIX = "PERMISSION_";
 
     private Long id;
     private String username;
@@ -55,11 +60,25 @@ public class AuthenticationDetails implements UserDetails {
     }
 
     public static AuthenticationDetails build(User user) {
-        List<GrantedAuthority> grantedAuthorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName()))
+        List<GrantedAuthority> grantedRoles = user.getRoles()
+                .stream()
+                .map(role -> new SimpleGrantedAuthority(String.format("%s%s", ROLE_PREFIX, role.getName())))
                 .collect(Collectors.toList());
 
-        return new AuthenticationDetails(user, grantedAuthorities);
+        List<GrantedAuthority> grantedPermissions = user.getRoles()
+                .stream()
+                .flatMap(role ->
+                        role.getPermissions()
+                                .stream().
+                                map(permission -> new SimpleGrantedAuthority(String.format(
+                                        "%s%s", PERMISSION_PREFIX, permission
+                                        ))
+                                ))
+                .collect(Collectors.toList());
+
+        grantedRoles.addAll(grantedPermissions);
+
+        return new AuthenticationDetails(user, grantedRoles);
     }
 
     @Override
@@ -95,13 +114,5 @@ public class AuthenticationDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return this.isActive;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AuthenticationDetails that = (AuthenticationDetails) o;
-        return id.equals(that.id);
     }
 }

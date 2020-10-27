@@ -26,8 +26,8 @@ public class Token {
     @Basic
     private LocalDateTime expirationDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private User user;
 
-    private String userUA;
+    private String userAgent;
 }
