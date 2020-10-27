@@ -24,9 +24,11 @@ public class AuthenticationDetailsService implements UserDetailsService {
 
     @Override
     @Transactional
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User " + username + " has not been found"));
+                .orElseThrow(() -> new UsernameNotFoundException(String.format(
+                        "User %s has not been found", username))
+                );
 
         return AuthenticationDetails.build(user);
     }
