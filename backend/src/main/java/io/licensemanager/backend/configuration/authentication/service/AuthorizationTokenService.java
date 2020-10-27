@@ -65,7 +65,7 @@ public class AuthorizationTokenService {
                 }
             }
         }
-        
+
         return generateToken();
     }
 
@@ -78,16 +78,20 @@ public class AuthorizationTokenService {
     }
 
     public void assignTokenToUser(String tokenValue, String userAgent, User user) {
-        logger.debug("Assigning new token to user with username {}", user.getUsername());
-        Token token = new Token();
-        token.setValue(tokenValue);
-        LocalDateTime currentDate = LocalDateTime.now();
-        token.setExpirationDate(currentDate.plus(TOKEN_TTL_VALUE));
-        token.setCreationDate(currentDate);
-        token.setUser(user);
-        token.setUserAgent(userAgent);
+        if (tokenRepository.findByValue(tokenValue).isEmpty()) {
+            logger.debug("Assigning new authorization token to user with username {}", user.getUsername());
+            Token token = new Token();
+            token.setValue(tokenValue);
+            LocalDateTime currentDate = LocalDateTime.now();
+            token.setExpirationDate(currentDate.plus(TOKEN_TTL_VALUE));
+            token.setCreationDate(currentDate);
+            token.setUser(user);
+            token.setUserAgent(userAgent);
 
-        tokenRepository.save(token);
+            tokenRepository.save(token);
+        } else {
+            logger.debug("User got some old valid stored authorization token for its UA");
+        }
     }
 
     public void revokeTokenFromUser(User user) {
