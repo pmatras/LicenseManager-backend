@@ -23,6 +23,9 @@ public class AuthenticationDetails implements UserDetails {
 
     private static Logger logger = LoggerFactory.getLogger(AuthenticationDetails.class);
 
+    private static String ROLE_PREFIX = "ROLE_";
+    private static String PERMISSION_PREFIX = "PERMISSION_";
+
     private Long id;
     private String username;
     @JsonIgnore
@@ -59,7 +62,7 @@ public class AuthenticationDetails implements UserDetails {
     public static AuthenticationDetails build(User user) {
         List<GrantedAuthority> grantedRoles = user.getRoles()
                 .stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                .map(role -> new SimpleGrantedAuthority(String.format("%s%s", ROLE_PREFIX, role.getName())))
                 .collect(Collectors.toList());
 
         List<GrantedAuthority> grantedPermissions = user.getRoles()
@@ -67,11 +70,14 @@ public class AuthenticationDetails implements UserDetails {
                 .flatMap(role ->
                         role.getPermissions()
                                 .stream().
-                                map(permission -> new SimpleGrantedAuthority("PERMISSION_" + permission)))
+                                map(permission -> new SimpleGrantedAuthority(String.format(
+                                        "%s%s", PERMISSION_PREFIX, permission
+                                        ))
+                                ))
                 .collect(Collectors.toList());
 
         grantedRoles.addAll(grantedPermissions);
-        
+
         return new AuthenticationDetails(user, grantedRoles);
     }
 
