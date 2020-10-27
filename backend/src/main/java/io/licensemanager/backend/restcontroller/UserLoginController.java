@@ -71,7 +71,7 @@ public class UserLoginController {
             User authenticatedUser = user.get();
             tokenService.assignTokenToUser(token, userAgent, authenticatedUser);
 
-            ResponseEntity.ok(new UserLoginResponse(
+            return ResponseEntity.ok(new UserLoginResponse(
                     "Authentication successful",
                     authenticatedUser.getUsername(),
                     token,
