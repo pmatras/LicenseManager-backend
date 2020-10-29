@@ -66,6 +66,7 @@ public class AdminService {
     public Optional<Role> createRoleIfNotExists(final String name, final Set<String> permissions) {
         Optional<Role> role = roleRepository.findByName(name);
         if (!role.isPresent()) {
+            logger.debug("Creating new role {}", name);
             Role roleToCreate = new Role();
             roleToCreate.setName(name);
             roleToCreate.setPermissions(permissions);
@@ -74,5 +75,21 @@ public class AdminService {
         }
 
         return Optional.empty();
+    }
+
+    public boolean assignRolesToUser(final Long userId, final Set<String> rolesToAssign) {
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isPresent()) {
+            Set<Role> roles = roleRepository.findAllByNameIn(rolesToAssign);
+            if (!roles.isEmpty()) {
+                User userToAssign = user.get();
+                userToAssign.setRoles(roles);
+                logger.debug("Assigning roles {} to user {}", rolesToAssign.toString(), userToAssign.getUsername());
+
+                return userRepository.save(userToAssign).getId() == userId;
+            }
+        }
+
+        return false;
     }
 }

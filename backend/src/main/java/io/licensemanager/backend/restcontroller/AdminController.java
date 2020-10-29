@@ -2,6 +2,7 @@ package io.licensemanager.backend.restcontroller;
 
 import io.licensemanager.backend.entity.Role;
 import io.licensemanager.backend.entity.User;
+import io.licensemanager.backend.model.request.AssignRolesRequest;
 import io.licensemanager.backend.model.request.CreateRoleRequest;
 import io.licensemanager.backend.service.AdminService;
 import lombok.RequiredArgsConstructor;
@@ -116,5 +117,26 @@ public class AdminController {
                         "Failed to create role, role with name %s already exists ", request.getName()
                         )
                 ));
+    }
+
+    @PostMapping(path = "/assign_role")
+    public ResponseEntity<?> assignRolesToUser(@Valid @RequestBody AssignRolesRequest request) {
+        if (!request.isValid()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Collections.singletonMap("message", "Every field must not be null or blank"));
+        }
+
+        if (adminService.assignRolesToUser(request.getUserId(), request.getRoles())) {
+            return ResponseEntity.ok(
+                    Collections.singletonMap("message", String.format(
+                            "Successfully assigned roles to user with id %d", request.getUserId()
+                            )
+                    ));
+        }
+
+        return ResponseEntity
+                .badRequest()
+                .body(Collections.singletonMap("message", "Failed to assign roles to user"));
     }
 }
