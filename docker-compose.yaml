@@ -21,7 +21,7 @@ services:
     hostname: license-manager-postgres
     networks:
       - backend
-    restart: on-failure
+    restart: always
 
   mail-server:
     image: mailhog/mailhog:v1.0.1
@@ -36,7 +36,7 @@ services:
     hostname: license-manager-mail-server
     networks:
       - backend
-    restart: on-failure
+    restart: always
 
   backend:
     build: ./backend
@@ -60,5 +60,5 @@ services:
     hostname: license-manager-backend
     networks:
       - backend
-    restart: on-failure
+    restart: always
     
