@@ -1,6 +1,8 @@
 package io.licensemanager.backend.restcontroller;
 
+import io.licensemanager.backend.entity.Role;
 import io.licensemanager.backend.entity.User;
+import io.licensemanager.backend.model.request.CreateRoleRequest;
 import io.licensemanager.backend.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -10,9 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.validation.Valid;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -82,6 +86,34 @@ public class AdminController {
                 .badRequest()
                 .body(Collections.singletonMap("message", String.format(
                         "Failed to disable user with id %d - user doesn't exist or is already disabled", userId
+                        )
+                ));
+    }
+
+    @PostMapping(path = "/create_role")
+    public ResponseEntity<?> createRole(@Valid @RequestBody CreateRoleRequest request) {
+        if (!request.isValid()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Collections.singletonMap("message", "Every field must not be null or blank"));
+        }
+
+        Optional<Role> role = adminService.createRoleIfNotExists(request.getName(), request.getPermissions());
+
+        if (role.isPresent()) {
+            Role createRole = role.get();
+
+            return ResponseEntity.ok(
+                    Collections.singletonMap("message", String.format(
+                            "Created role with name %s", createRole.getName()
+                            )
+                    ));
+        }
+
+        return ResponseEntity
+                .badRequest()
+                .body(Collections.singletonMap("message", String.format(
+                        "Failed to create role, role with name %s already exists ", request.getName()
                         )
                 ));
     }

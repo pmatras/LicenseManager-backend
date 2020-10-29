@@ -1,6 +1,8 @@
 package io.licensemanager.backend.service;
 
+import io.licensemanager.backend.entity.Role;
 import io.licensemanager.backend.entity.User;
+import io.licensemanager.backend.repository.RoleRepository;
 import io.licensemanager.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -17,6 +20,7 @@ public class AdminService {
     private static final Logger logger = LoggerFactory.getLogger(AdminService.class);
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     public Optional<User> activateUserByAdmin(final Long userId) {
         logger.info("Activating user account by admin");
@@ -55,6 +59,19 @@ public class AdminService {
             return Optional.of(userRepository.save(userToDisable));
         }
         logger.warn("Failed to disable user by admin - user doesn't exist or is already disabled");
+
+        return Optional.empty();
+    }
+
+    public Optional<Role> createRoleIfNotExists(final String name, final Set<String> permissions) {
+        Optional<Role> role = roleRepository.findByName(name);
+        if (!role.isPresent()) {
+            Role roleToCreate = new Role();
+            roleToCreate.setName(name);
+            roleToCreate.setPermissions(permissions);
+
+            return Optional.of(roleRepository.save(roleToCreate));
+        }
 
         return Optional.empty();
     }
