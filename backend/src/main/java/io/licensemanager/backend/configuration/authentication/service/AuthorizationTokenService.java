@@ -59,6 +59,7 @@ public class AuthorizationTokenService {
             if (token.isPresent()) {
                 Token foundToken = token.get();
                 if (isTokenValid(foundToken)) {
+                    renewToken(foundToken);
                     return token.get().getValue();
                 } else {
                     tokenRepository.delete(foundToken);
@@ -75,6 +76,13 @@ public class AuthorizationTokenService {
         random.nextBytes(bytes);
 
         return Sha512DigestUtils.shaHex(bytes);
+    }
+
+    private void renewToken(Token token) {
+        logger.debug("Refreshing authorization token");
+        token.setExpirationDate(LocalDateTime.now()
+                .plus(TOKEN_TTL_VALUE));
+        tokenRepository.save(token);
     }
 
     public void assignTokenToUser(String tokenValue, String userAgent, User user) {
