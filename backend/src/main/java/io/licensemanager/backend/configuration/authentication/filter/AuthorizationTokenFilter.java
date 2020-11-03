@@ -59,7 +59,9 @@ public class AuthorizationTokenFilter extends OncePerRequestFilter {
                     logger.error("Detected request with expired authorization token");
                 }
             } else {
-                logger.warn("Detected request without authorization token");
+                logger.warn("Detected request without authorization token for request: {} {}",
+                        request.getMethod(),
+                        request.getRequestURL());
             }
         } catch (Exception e) {
             logger.error("Exception occurred while parsing authorization token from request, reason: {}", e.getMessage());
