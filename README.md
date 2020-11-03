@@ -40,3 +40,9 @@ Engineer's Thesis project repository
     mail properties defined in [application.properties](./backend/src/main/resources/application.properties) to satisfy your requirements
 
 If you want to run application locally, you have to define environment variables specified in [application.properties](./backend/src/main/resources/application.properties) or edit this file with direct values of config directives.
+
+3. Configuring CORS in Spring server - to configure domains allowed by CORS change ``cors.clients.urls`` [application.properties](./backend/src/main/resources/application.properties) directive, for example:
+```
+cors.clients.urls=https://localhost:9804, https://localhost:9805
+```
+If directive is not specified or commented the default value is '*' - allows all origins

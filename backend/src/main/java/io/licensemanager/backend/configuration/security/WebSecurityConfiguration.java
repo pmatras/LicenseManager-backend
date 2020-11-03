@@ -1,7 +1,7 @@
 package io.licensemanager.backend.configuration.security;
 
-import io.licensemanager.backend.configuration.authentication.filter.UnauthorizedHandler;
 import io.licensemanager.backend.configuration.authentication.filter.AuthorizationTokenFilter;
+import io.licensemanager.backend.configuration.authentication.filter.UnauthorizedHandler;
 import io.licensemanager.backend.configuration.authentication.service.AuthenticationDetailsService;
 import io.licensemanager.backend.configuration.authentication.service.AuthorizationTokenService;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +53,9 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .cors().and().csrf().disable()
+                .cors()
+                .and()
+                .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
