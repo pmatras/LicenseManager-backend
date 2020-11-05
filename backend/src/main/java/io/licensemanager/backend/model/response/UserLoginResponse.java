@@ -11,6 +11,8 @@ public class UserLoginResponse {
     private String message;
     private String username;
     private String authorizationToken;
+    private String firstName;
+    private String lastName;
     private Set<String> roles;
     private Set<String> privileges;
 }

@@ -16,10 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Collections;
@@ -75,6 +72,8 @@ public class UserLoginController {
                     "Authentication successful",
                     authenticatedUser.getUsername(),
                     token,
+                    authenticatedUser.getFirstName(),
+                    authenticatedUser.getLastName(),
                     authenticatedUser.getRoles()
                             .stream().map(role -> role.getName())
                             .collect(Collectors.toSet()),
