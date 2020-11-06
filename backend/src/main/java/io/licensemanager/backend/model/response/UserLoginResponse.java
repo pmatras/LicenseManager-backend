@@ -5,12 +5,30 @@ import lombok.Data;
 
 import java.util.Set;
 
-@AllArgsConstructor
 @Data
 public class UserLoginResponse {
     private String message;
-    private String username;
     private String authorizationToken;
+    private User user;
+
+    public UserLoginResponse(String message, String authorizationToken, String username, String firstName, String lastName,
+                             Set<String> roles, Set<String> privileges) {
+        this.message = message;
+        this.authorizationToken = authorizationToken;
+        this.user = new User(
+                username,
+                firstName,
+                lastName,
+                roles,
+                privileges
+        );
+    }
+}
+
+@AllArgsConstructor
+@Data
+class User {
+    private String username;
     private String firstName;
     private String lastName;
     private Set<String> roles;

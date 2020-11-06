@@ -70,8 +70,8 @@ public class UserLoginController {
 
             return ResponseEntity.ok(new UserLoginResponse(
                     "Authentication successful",
-                    authenticatedUser.getUsername(),
                     token,
+                    authenticatedUser.getUsername(),
                     authenticatedUser.getFirstName(),
                     authenticatedUser.getLastName(),
                     authenticatedUser.getRoles()
