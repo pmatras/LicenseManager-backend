@@ -64,7 +64,7 @@ public class InitialDataLoader {
             adminUser.setRoles(adminRoles);
             adminUser.setEmail("admin@license-manager.io");
             adminUser.setEmailConfirmed(true);
-            adminUser.setFirstName("License-manager");
+            adminUser.setFirstName("License-Manager");
             adminUser.setLastName("Administrator");
             adminUser.setIsActive(true);
             adminUser.setIsAccountActivated(true);
