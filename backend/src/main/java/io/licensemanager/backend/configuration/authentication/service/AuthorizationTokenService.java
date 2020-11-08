@@ -80,7 +80,9 @@ public class AuthorizationTokenService {
 
     private void renewToken(Token token) {
         logger.debug("Refreshing authorization token");
-        token.setExpirationDate(LocalDateTime.now()
+        LocalDateTime currentTimeStamp = LocalDateTime.now();
+        token.setCreationDate(currentTimeStamp);
+        token.setExpirationDate(currentTimeStamp
                 .plus(TOKEN_TTL_VALUE));
         tokenRepository.save(token);
     }
