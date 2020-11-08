@@ -38,10 +38,10 @@ public class AuthorizationTokenService {
         this.TOKEN_TTL_VALUE = TimeTokensParser.parseTimeToken(tokenTTLValue);
     }
 
-    public Optional<String> parseTokenFromRequest(HttpServletRequest request, final String authHeader, final String tokenType) {
-        String authorizationHeader = request.getHeader(authHeader);
-        if (!StringUtils.isEmpty(authorizationHeader) && authorizationHeader.startsWith(tokenType)) {
-            return Optional.of(StringUtils.removeStart(authorizationHeader, tokenType).trim());
+    public Optional<String> parseTokenFromRequest(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
+        if (!StringUtils.isEmpty(authorizationHeader) && authorizationHeader.startsWith(TOKEN_TYPE)) {
+            return Optional.of(StringUtils.removeStart(authorizationHeader, TOKEN_TYPE).trim());
         }
 
         return Optional.empty();
@@ -109,7 +109,7 @@ public class AuthorizationTokenService {
 
     @Transactional
     public void purgeAuthorizationToken(HttpServletRequest request) {
-        Optional<String> authToken = parseTokenFromRequest(request, AUTHORIZATION_HEADER, TOKEN_TYPE);
+        Optional<String> authToken = parseTokenFromRequest(request);
         if (authToken.isPresent()) {
             if (tokenRepository.deleteByValue(authToken.get()) != 0) {
                 logger.debug("Authorization token deleted successfully");

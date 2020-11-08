@@ -26,9 +26,6 @@ public class AuthorizationTokenFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthorizationTokenFilter.class);
 
-    private final String AUTHORIZATION_HEADER = "Authorization";
-    private final String AUTHORIZATION_TOKEN_TYPE = "Bearer";
-
     private final AuthorizationTokenService tokenService;
     private final AuthenticationDetailsService authenticationDetailsService;
 
@@ -37,7 +34,7 @@ public class AuthorizationTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         logger.debug("Parsing authorization token from request...");
         try {
-            Optional<String> tokenValue = tokenService.parseTokenFromRequest(request, AUTHORIZATION_HEADER, AUTHORIZATION_TOKEN_TYPE);
+            Optional<String> tokenValue = tokenService.parseTokenFromRequest(request);
             if (tokenValue.isPresent()) {
                 logger.debug("Found authorization token in request's header");
                 Optional<Token> token = tokenService.findTokenByValue(tokenValue.get());

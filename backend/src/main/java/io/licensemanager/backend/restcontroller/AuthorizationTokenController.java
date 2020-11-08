@@ -26,15 +26,12 @@ public class AuthorizationTokenController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthorizationTokenService.class);
 
-    private final String AUTHORIZATION_HEADER = "Authorization";
-    private final String TOKEN_TYPE = "Bearer";
-
     private final UserService userService;
     private final AuthorizationTokenService tokenService;
 
     @GetMapping(path = "/token")
     public ResponseEntity<?> verifyToken(HttpServletRequest request) {
-        Optional<String> authToken = tokenService.parseTokenFromRequest(request, AUTHORIZATION_HEADER, TOKEN_TYPE);
+        Optional<String> authToken = tokenService.parseTokenFromRequest(request);
         if (authToken.isEmpty()) {
             return ResponseEntity
                     .badRequest()
