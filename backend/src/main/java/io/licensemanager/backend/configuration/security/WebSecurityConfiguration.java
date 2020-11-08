@@ -56,7 +56,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         http
                 .cors()
                 .and()
-                .csrf().ignoringAntMatchers("/api/auth/register", "/api/account/activate**", "/api/auth/login", "/api/auth/token")
+                .csrf().ignoringAntMatchers("/api/auth/register", "/api/account/activate**", "/api/auth/login", "/api/auth/token", "/api/auth/logout")
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)

@@ -14,6 +14,7 @@ import org.springframework.security.core.token.Sha512DigestUtils;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAmount;
@@ -25,6 +26,8 @@ public class AuthorizationTokenService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthorizationTokenService.class);
 
+    private final String AUTHORIZATION_HEADER = "Authorization";
+    private final String TOKEN_TYPE = "Bearer";
     private final int TOKEN_BYTES = 256;
 
     private TemporalAmount TOKEN_TTL_VALUE;
@@ -101,6 +104,18 @@ public class AuthorizationTokenService {
             tokenRepository.save(token);
         } else {
             logger.debug("User got some old valid stored authorization token for its UA");
+        }
+    }
+
+    @Transactional
+    public void purgeAuthorizationToken(HttpServletRequest request) {
+        Optional<String> authToken = parseTokenFromRequest(request, AUTHORIZATION_HEADER, TOKEN_TYPE);
+        if (authToken.isPresent()) {
+            if (tokenRepository.deleteByValue(authToken.get()) != 0) {
+                logger.debug("Authorization token deleted successfully");
+            } else {
+                logger.debug("Failed to delete authorization token");
+            }
         }
     }
 
