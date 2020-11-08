@@ -30,6 +30,13 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final AuthorizationTokenService tokenService;
     private final UnauthorizedHandler unauthorizedHandler;
 
+    private final String[] SWAGGER_URL_PATHS = {
+            "/v2/api-docs**",
+            "/v3/api-docs**",
+            "/swagger-ui/**",
+            "/swagger-resources/**",
+    };
+
     @Bean
     public AuthorizationTokenFilter authorizationTokenFilter() {
         return new AuthorizationTokenFilter(tokenService, authenticationDetailsService);
@@ -63,6 +70,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 .antMatchers("/api/auth/register", "/api/account/activate**", "/api/auth/login").permitAll()
+                .antMatchers(SWAGGER_URL_PATHS).permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
