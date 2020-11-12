@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Collections;
@@ -89,6 +86,20 @@ public class AdminController {
                         "Failed to disable user with id %d - user doesn't exist or is already disabled", userId
                         )
                 ));
+    }
+
+    @GetMapping(path = "/users")
+    public ResponseEntity<?> getListOfUsers() {
+        return ResponseEntity.ok(
+                adminService.getListOfUsers()
+        );
+    }
+
+    @GetMapping(path = "/pending_users")
+    public ResponseEntity<?> getListOfPendingUsers() {
+        return ResponseEntity.ok(
+                adminService.getListOfPendingUsers()
+        );
     }
 
     @PostMapping(path = "/create_role")
