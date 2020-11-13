@@ -48,14 +48,14 @@ public class AdminController {
                 ));
     }
 
-    @PostMapping(path = "/enable_user")
-    public ResponseEntity<?> enableUserAccount(@RequestParam(name = "user_id") final Long userId) {
-        Optional<User> user = adminService.enableUserAccount(userId);
+    @PostMapping(path = "/unlock_user")
+    public ResponseEntity<?> unlockUserAccount(@RequestParam(name = "user_id") final Long userId) {
+        Optional<User> user = adminService.unlockUserAccount(userId);
 
         if (user.isPresent()) {
             return ResponseEntity.ok(
                     Collections.singletonMap("message", String.format(
-                            "User %s enabled successfully", user.get().getUsername()
+                            "User %s unlocked successfully", user.get().getUsername()
                             )
                     ));
         }
@@ -63,19 +63,19 @@ public class AdminController {
         return ResponseEntity
                 .badRequest()
                 .body(Collections.singletonMap("message", String.format(
-                        "Failed to enable user with id %d - user doesn't exist or is already enabled", userId
+                        "Failed to unlock user with id %d - user doesn't exist or is already unlocked", userId
                         )
                 ));
     }
 
-    @PostMapping(path = "/disable_user")
-    public ResponseEntity<?> disableUserAccount(@RequestParam(name = "user_id") final Long userId) {
-        Optional<User> user = adminService.disableUserAccount(userId);
+    @PostMapping(path = "/lock_user")
+    public ResponseEntity<?> lockUserAccount(@RequestParam(name = "user_id") final Long userId) {
+        Optional<User> user = adminService.lockUserAccount(userId);
 
         if (user.isPresent()) {
             return ResponseEntity.ok(
                     Collections.singletonMap("message", String.format(
-                            "User %s disabled successfully", user.get().getUsername()
+                            "User %s locked successfully", user.get().getUsername()
                             )
                     ));
         }
@@ -83,7 +83,7 @@ public class AdminController {
         return ResponseEntity
                 .badRequest()
                 .body(Collections.singletonMap("message", String.format(
-                        "Failed to disable user with id %d - user doesn't exist or is already disabled", userId
+                        "Failed to lock user with id %d - user doesn't exist or is already locked", userId
                         )
                 ));
     }

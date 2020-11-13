@@ -36,30 +36,30 @@ public class AdminService {
         return Optional.empty();
     }
 
-    public Optional<User> enableUserAccount(final Long userId) {
-        logger.info("Enabling user account by admin");
+    public Optional<User> unlockUserAccount(final Long userId) {
+        logger.info("Unlocking user account by admin");
         Optional<User> user = userRepository.findById(userId);
         if (user.isPresent() && !user.get().getIsActive()) {
-            User userToEnable = user.get();
-            userToEnable.setIsActive(true);
+            User userToUnlock = user.get();
+            userToUnlock.setIsActive(true);
 
-            return Optional.of(userRepository.save(userToEnable));
+            return Optional.of(userRepository.save(userToUnlock));
         }
-        logger.warn("Failed to enable user by admin - user doesn't exist or is already enabled");
+        logger.warn("Failed to unlock user by admin - user doesn't exist or is already unlocked");
 
         return Optional.empty();
     }
 
-    public Optional<User> disableUserAccount(final Long userId) {
-        logger.info("Disabling user account by admin");
+    public Optional<User> lockUserAccount(final Long userId) {
+        logger.info("Locking user account by admin");
         Optional<User> user = userRepository.findById(userId);
         if (user.isPresent() && user.get().getIsActive()) {
-            User userToDisable = user.get();
-            userToDisable.setIsActive(false);
+            User userToLock = user.get();
+            userToLock.setIsActive(false);
 
-            return Optional.of(userRepository.save(userToDisable));
+            return Optional.of(userRepository.save(userToLock));
         }
-        logger.warn("Failed to disable user by admin - user doesn't exist or is already disabled");
+        logger.warn("Failed to lock user by admin - user doesn't exist or is already locked");
 
         return Optional.empty();
     }
