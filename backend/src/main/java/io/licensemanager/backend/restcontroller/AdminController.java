@@ -89,9 +89,9 @@ public class AdminController {
     }
 
     @GetMapping(path = "/users")
-    public ResponseEntity<?> getListOfUsers() {
+    public ResponseEntity<?> getListOfActivatedUsers() {
         return ResponseEntity.ok(
-                adminService.getListOfUsers()
+                adminService.getListOfActivatedUsers()
         );
     }
 
