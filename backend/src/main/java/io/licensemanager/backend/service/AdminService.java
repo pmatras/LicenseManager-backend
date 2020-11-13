@@ -2,6 +2,7 @@ package io.licensemanager.backend.service;
 
 import io.licensemanager.backend.entity.Role;
 import io.licensemanager.backend.entity.User;
+import io.licensemanager.backend.repository.ActivationTokenRepository;
 import io.licensemanager.backend.repository.RoleRepository;
 import io.licensemanager.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +24,7 @@ public class AdminService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final ActivationTokenRepository activationTokenRepository;
 
     public Optional<User> activateUserByAdmin(final Long userId) {
         logger.info("Activating user account by admin");
@@ -100,5 +103,21 @@ public class AdminService {
 
     public List<User> getListOfPendingUsers() {
         return userRepository.findAllByIsAccountActivatedByAdminFalse();
+    }
+
+    @Transactional
+    public boolean deletePendingUserAccount(final Long userId) {
+        logger.debug("Deleting pending user's account by admin");
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isPresent() && !user.get().getIsAccountActivatedByAdmin()) {
+            activationTokenRepository.deleteAllByUserId(userId);
+            userRepository.deleteById(userId);
+
+            return true;
+        }
+        logger.error("Failed to delete user account with id {} - user doesn't exist or account isn't pending",
+                userId);
+
+        return false;
     }
 }

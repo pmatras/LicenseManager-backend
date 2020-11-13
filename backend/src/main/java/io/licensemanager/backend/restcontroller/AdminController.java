@@ -150,4 +150,20 @@ public class AdminController {
                 .badRequest()
                 .body(Collections.singletonMap("message", "Failed to assign roles to user"));
     }
+
+    @PostMapping(path = "/delete_pending_user")
+    public ResponseEntity<?> deletePendingUser(@RequestParam(name = "user_id") final Long userId) {
+        if (adminService.deletePendingUserAccount(userId)) {
+            return ResponseEntity.ok(
+                    Collections.singletonMap("message", String.format(
+                            "Successfully deleted pending user's account with id %d", userId
+                            )
+                    ));
+        }
+
+        return ResponseEntity
+                .badRequest()
+                .body(Collections.singletonMap("message", "User doesn't exist or isn't pending"));
+
+    }
 }
