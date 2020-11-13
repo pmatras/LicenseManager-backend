@@ -22,13 +22,14 @@ public class WebConfiguration implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
                 .allowedOrigins(ALLOWED_ORIGINS)
+                .allowCredentials(true)
                 .allowedMethods(
                         HttpMethod.GET.name(),
                         HttpMethod.POST.name(),
                         HttpMethod.PUT.name(),
                         HttpMethod.DELETE.name(),
                         HttpMethod.HEAD.name()
-                        )
+                )
                 .maxAge(3600L);
     }
 }
