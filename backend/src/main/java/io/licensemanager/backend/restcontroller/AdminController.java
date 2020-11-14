@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -90,8 +92,12 @@ public class AdminController {
 
     @GetMapping(path = "/users")
     public ResponseEntity<?> getListOfActivatedUsers() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        String adminUsername = userDetails.getUsername();
+
         return ResponseEntity.ok(
-                adminService.getListOfActivatedUsers()
+                adminService.getListOfActivatedUsersExceptOne(adminUsername)
         );
     }
 

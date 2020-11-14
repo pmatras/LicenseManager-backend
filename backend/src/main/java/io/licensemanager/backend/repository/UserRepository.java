@@ -15,7 +15,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Boolean existsByEmail(final String email);
 
-    List<User> findAllByIsAccountActivatedByAdminTrue();
+    List<User> findAllByIsAccountActivatedByAdminTrueAndUsernameIsNot(final String username);
 
     List<User> findAllByIsAccountActivatedByAdminFalse();
 

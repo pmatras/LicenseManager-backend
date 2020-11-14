@@ -97,8 +97,9 @@ public class AdminService {
         return false;
     }
 
-    public List<User> getListOfActivatedUsers() {
-        return userRepository.findAllByIsAccountActivatedByAdminTrue();
+    public List<User> getListOfActivatedUsersExceptOne(final String username) {
+        return userRepository
+                .findAllByIsAccountActivatedByAdminTrueAndUsernameIsNot(username);
     }
 
     public List<User> getListOfPendingUsers() {
