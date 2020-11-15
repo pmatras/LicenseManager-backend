@@ -2,8 +2,8 @@ package io.licensemanager.backend.restcontroller;
 
 import io.licensemanager.backend.entity.Role;
 import io.licensemanager.backend.entity.User;
-import io.licensemanager.backend.model.request.AssignRolesRequest;
 import io.licensemanager.backend.model.request.CreateRoleRequest;
+import io.licensemanager.backend.model.request.UserRolesRequest;
 import io.licensemanager.backend.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -31,13 +31,24 @@ public class AdminController {
     private final AdminService adminService;
 
     @PostMapping(path = "/activate_user")
-    public ResponseEntity<?> activateUserByAdmin(@RequestParam(name = "user_id") final Long userId) {
-        Optional<User> user = adminService.activateUserByAdmin(userId);
+    public ResponseEntity<?> activateUserByAdmin(@Valid @RequestBody final UserRolesRequest activationRequest) {
+        if (!activationRequest.isValid()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Every field must not be null or blank");
+        }
+
+        Optional<User> user = adminService.activateUserByAdmin(
+                activationRequest.getUserId(),
+                activationRequest.getRoles()
+        );
 
         if (user.isPresent()) {
             return ResponseEntity.ok(
                     Collections.singletonMap("message", String.format(
-                            "User %s activated successfully", user.get().getUsername()
+                            "User %s activated successfully with roles %s",
+                            user.get().getUsername(),
+                            activationRequest.getRoles().toString()
                             )
                     ));
         }
@@ -45,7 +56,8 @@ public class AdminController {
         return ResponseEntity
                 .badRequest()
                 .body(Collections.singletonMap("message", String.format(
-                        "Failed to activate user with id %d - user doesn't exist or is already activated", userId
+                        "Failed to activate user with id %d - user doesn't exist or is already activated",
+                        activationRequest.getUserId()
                         )
                 ));
     }
@@ -136,18 +148,20 @@ public class AdminController {
                 ));
     }
 
-    @PostMapping(path = "/assign_role")
-    public ResponseEntity<?> assignRolesToUser(@Valid @RequestBody AssignRolesRequest request) {
+    @PutMapping(path = "/edit_user_roles")
+    public ResponseEntity<?> editUserRoles(@Valid @RequestBody UserRolesRequest request) {
         if (!request.isValid()) {
             return ResponseEntity
                     .badRequest()
                     .body(Collections.singletonMap("message", "Every field must not be null or blank"));
         }
 
-        if (adminService.assignRolesToUser(request.getUserId(), request.getRoles())) {
+        if (adminService.editUserRoles(request.getUserId(), request.getRoles())) {
             return ResponseEntity.ok(
                     Collections.singletonMap("message", String.format(
-                            "Successfully assigned roles to user with id %d", request.getUserId()
+                            "Successfully assigned roles %s to user with id %d",
+                            request.getRoles().toString(),
+                            request.getUserId()
                             )
                     ));
         }
@@ -171,5 +185,12 @@ public class AdminController {
                 .badRequest()
                 .body(Collections.singletonMap("message", "User doesn't exist or isn't pending"));
 
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getListOfRoles() {
+        return ResponseEntity.ok(
+                adminService.getRolesList()
+        );
     }
 }

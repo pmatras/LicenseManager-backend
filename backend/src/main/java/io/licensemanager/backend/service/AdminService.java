@@ -26,12 +26,20 @@ public class AdminService {
     private final RoleRepository roleRepository;
     private final ActivationTokenRepository activationTokenRepository;
 
-    public Optional<User> activateUserByAdmin(final Long userId) {
-        logger.info("Activating user account by admin");
+    @Transactional
+    public Optional<User> activateUserByAdmin(final Long userId, final Set<String> userRoles) {
+        logger.info("Activating user account by admin and assigning roles {}", userRoles);
         Optional<User> user = userRepository.findById(userId);
         if (user.isPresent() && !user.get().getIsAccountActivatedByAdmin()) {
             User userToActivate = user.get();
             userToActivate.setIsAccountActivatedByAdmin(true);
+            Set<Role> roles = roleRepository.findAllByNameIn(userRoles);
+            if (!roles.isEmpty()) {
+                userToActivate.setRoles(roles);
+            } else {
+                logger.error("Selected roles {} cannot be assigned to user - none exist", userRoles);
+            }
+
             return Optional.of(userRepository.save(userToActivate));
         }
         logger.warn("Failed to activate user by admin - user doesn't exist or is already activated");
@@ -81,7 +89,7 @@ public class AdminService {
         return Optional.empty();
     }
 
-    public boolean assignRolesToUser(final Long userId, final Set<String> rolesToAssign) {
+    public boolean editUserRoles(final Long userId, final Set<String> rolesToAssign) {
         Optional<User> user = userRepository.findById(userId);
         if (user.isPresent()) {
             Set<Role> roles = roleRepository.findAllByNameIn(rolesToAssign);
@@ -120,5 +128,9 @@ public class AdminService {
                 userId);
 
         return false;
+    }
+
+    public List<Role> getRolesList() {
+        return roleRepository.findAll();
     }
 }
