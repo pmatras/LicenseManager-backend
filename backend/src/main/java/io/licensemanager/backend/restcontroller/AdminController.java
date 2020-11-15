@@ -187,7 +187,7 @@ public class AdminController {
 
     }
 
-    @GetMapping
+    @GetMapping(path = "/roles_list")
     public ResponseEntity<?> getListOfRoles() {
         return ResponseEntity.ok(
                 adminService.getRolesList()
