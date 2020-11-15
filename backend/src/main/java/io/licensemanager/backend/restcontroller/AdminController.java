@@ -35,7 +35,7 @@ public class AdminController {
         if (!activationRequest.isValid()) {
             return ResponseEntity
                     .badRequest()
-                    .body("Every field must not be null or blank");
+                    .body(Collections.singletonMap("message", "Every field must not be null or blank"));
         }
 
         Optional<User> user = adminService.activateUserByAdmin(
