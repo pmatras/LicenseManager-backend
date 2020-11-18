@@ -1,5 +1,6 @@
 package io.licensemanager.backend.service;
 
+import io.licensemanager.backend.configuration.setup.AVAILABLE_ROLES_PERMISSIONS;
 import io.licensemanager.backend.entity.Role;
 import io.licensemanager.backend.entity.User;
 import io.licensemanager.backend.repository.ActivationTokenRepository;
@@ -15,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -75,7 +78,8 @@ public class AdminService {
         return Optional.empty();
     }
 
-    public Optional<Role> createRoleIfNotExists(final String name, final Set<String> permissions) {
+    @Transactional
+    public Optional<Role> createRoleIfNotExists(final String name, final Set<String> permissions, final Set<Long> usersIds) {
         Optional<Role> role = roleRepository.findByName(name);
         if (!role.isPresent()) {
             logger.debug("Creating new role {}", name);
@@ -83,10 +87,65 @@ public class AdminService {
             roleToCreate.setName(name);
             roleToCreate.setPermissions(permissions);
 
-            return Optional.of(roleRepository.save(roleToCreate));
+            Role createdRole = roleRepository.save(roleToCreate);
+            logger.debug("Role created");
+            if (usersIds != null && !usersIds.isEmpty()) {
+                logger.debug("Assigning selected users to new role");
+                Set<User> users = userRepository.findAllByIdIn(usersIds);
+                if (!users.isEmpty()) {
+                    users.forEach(user -> {
+                        Set<Role> usersRoles = user.getRoles();
+                        usersRoles.add(createdRole);
+                        user.setRoles(usersRoles);
+                    });
+
+                    userRepository.saveAll(users);
+                    logger.debug("Users assigned");
+                }
+            }
+
+            return Optional.of(createdRole);
         }
 
         return Optional.empty();
+    }
+
+    public boolean editRolesPermissions(final String roleName, final Set<String> permissions) {
+        logger.debug("Editing role {}", roleName);
+        Optional<Role> roleToEdit = roleRepository.findByName(roleName);
+        if (roleToEdit.isPresent()) {
+            Role role = roleToEdit.get();
+            role.setPermissions(permissions);
+
+            return roleRepository.save(role).getName().equals(roleName);
+        }
+        logger.error("Requested role doesn't exist, edition aborted");
+
+        return false;
+    }
+
+    public boolean deleteRoleIfExists(final Long roleId) {
+        Optional<Role> role = roleRepository.findById(roleId);
+        if (role.isPresent()) {
+            if (role.get().getName().equals("ADMIN")) {
+                logger.error("ADMIN role cannot be deleted!");
+                return false;
+            }
+            Set<User> users = userRepository.findAllByRolesContains(role.get());
+            if (!users.isEmpty()) {
+                users.forEach(user -> {
+                    Set<Role> usersRoles = user.getRoles();
+                    usersRoles.remove(role.get());
+                });
+
+                userRepository.saveAll(users);
+            }
+            roleRepository.delete(role.get());
+
+            return true;
+        }
+
+        return false;
     }
 
     public boolean editUserRoles(final Long userId, final Set<String> rolesToAssign) {
@@ -132,5 +191,11 @@ public class AdminService {
 
     public List<Role> getRolesList() {
         return roleRepository.findAll();
+    }
+
+    public List<String> getAvailablePermissionsList() {
+        return Stream.of(AVAILABLE_ROLES_PERMISSIONS.values())
+                .map(AVAILABLE_ROLES_PERMISSIONS::name)
+                .collect(Collectors.toList());
     }
 }

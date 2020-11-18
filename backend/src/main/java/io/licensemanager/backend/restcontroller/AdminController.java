@@ -2,7 +2,7 @@ package io.licensemanager.backend.restcontroller;
 
 import io.licensemanager.backend.entity.Role;
 import io.licensemanager.backend.entity.User;
-import io.licensemanager.backend.model.request.CreateRoleRequest;
+import io.licensemanager.backend.model.request.RoleRequest;
 import io.licensemanager.backend.model.request.UserRolesRequest;
 import io.licensemanager.backend.service.AdminService;
 import lombok.RequiredArgsConstructor;
@@ -121,14 +121,14 @@ public class AdminController {
     }
 
     @PostMapping(path = "/create_role")
-    public ResponseEntity<?> createRole(@Valid @RequestBody CreateRoleRequest request) {
+    public ResponseEntity<?> createRole(@Valid @RequestBody RoleRequest request) {
         if (!request.isValid()) {
             return ResponseEntity
                     .badRequest()
-                    .body(Collections.singletonMap("message", "Every field must not be null or blank"));
+                    .body(Collections.singletonMap("message", "Role name and permissions must not be null or blank"));
         }
 
-        Optional<Role> role = adminService.createRoleIfNotExists(request.getName(), request.getPermissions());
+        Optional<Role> role = adminService.createRoleIfNotExists(request.getName(), request.getPermissions(), request.getUsersIds());
 
         if (role.isPresent()) {
             Role createRole = role.get();
@@ -146,6 +146,39 @@ public class AdminController {
                         "Failed to create role, role with name %s already exists ", request.getName()
                         )
                 ));
+    }
+
+    @DeleteMapping(path = "/delete_role")
+    public ResponseEntity<?> deleteRole(@Valid @RequestParam(name = "role_id") final Long roleId) {
+        return adminService.deleteRoleIfExists(roleId) ?
+                ResponseEntity.ok(
+                        Collections.singletonMap("message", "Role successfully deleted")
+                ) :
+                ResponseEntity
+                        .badRequest()
+                        .body(Collections.singletonMap("message", "Failed to delete role"));
+    }
+
+    @PutMapping(path = "/edit_role")
+    public ResponseEntity<?> editRolesPermissions(@Valid @RequestBody final RoleRequest request) {
+        if (!request.isValid()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Collections.singletonMap("message", "Every field must not be null or blank"));
+        }
+
+        return adminService.editRolesPermissions(request.getName(), request.getPermissions()) ?
+                ResponseEntity
+                        .ok(Collections.singletonMap("message", String.format(
+                                "Role %s successfully edited", request.getName()
+                                ))
+                        ) :
+                ResponseEntity
+                        .badRequest()
+                        .body(Collections.singletonMap("message", String.format(
+                                "Failed to edit role %s", request.getName()
+                                ))
+                        );
     }
 
     @PutMapping(path = "/edit_user_roles")
@@ -171,7 +204,7 @@ public class AdminController {
                 .body(Collections.singletonMap("message", "Failed to assign roles to user"));
     }
 
-    @PostMapping(path = "/delete_pending_user")
+    @DeleteMapping(path = "/delete_pending_user")
     public ResponseEntity<?> deletePendingUser(@RequestParam(name = "user_id") final Long userId) {
         if (adminService.deletePendingUserAccount(userId)) {
             return ResponseEntity.ok(
@@ -191,6 +224,13 @@ public class AdminController {
     public ResponseEntity<?> getListOfRoles() {
         return ResponseEntity.ok(
                 adminService.getRolesList()
+        );
+    }
+
+    @GetMapping(path = "/permissions_list")
+    public ResponseEntity<?> getListOfAvailablePermissions() {
+        return ResponseEntity.ok(
+                adminService.getAvailablePermissionsList()
         );
     }
 }
