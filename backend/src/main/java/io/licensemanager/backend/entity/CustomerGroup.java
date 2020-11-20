@@ -1,5 +1,6 @@
 package io.licensemanager.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -36,4 +37,9 @@ public class CustomerGroup {
             inverseJoinColumns = @JoinColumn(name = "customer_id")
     )
     private Set<Customer> customers;
+
+    @JsonIgnore
+    @OneToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User creator;
 }
