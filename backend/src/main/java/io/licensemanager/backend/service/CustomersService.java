@@ -42,6 +42,20 @@ public class CustomersService {
                 .collect(Collectors.toList());
     }
 
+    private List<Customer> checkPermissionsToCustomers(List<Customer> customers, User creator,
+                                                       Set<ROLES_PERMISSIONS> userPermissions) {
+        logger.debug("Checking permissions to all requested customers!");
+        if (userPermissions.contains(ROLES_PERMISSIONS.ALL) ||
+                userPermissions.contains(ROLES_PERMISSIONS.EDIT_ALL_CUSTOMERS)) {
+            return customers;
+        }
+        logger.error("User doesn't have permissions to all requested customers - skipping forbidden customers");
+
+        return customers.stream()
+                .filter(record -> record.getCreator().equals(creator))
+                .collect(Collectors.toList());
+    }
+
     public List<Customer> getCustomersList(final String username, final Set<ROLES_PERMISSIONS> userPermissions) {
         logger.debug("Getting customers list");
         Optional<User> user = userRepository.findByUsername(username);
@@ -89,6 +103,46 @@ public class CustomersService {
             }
 
             return Optional.of(customerRepository.save(customer));
+        }
+        logger.error("Error - customer with this name already exists for this user");
+
+        return Optional.empty();
+    }
+
+    public Optional<CustomerGroup> createGroupIfNotExists(final String groupName, final String displayColor,
+                                                          final Set<Long> customersIds, final String creatorUsername,
+                                                          final Set<ROLES_PERMISSIONS> permissions) {
+        logger.debug("Creating new group: {}", groupName);
+        Optional<User> creator = userRepository.findByUsername(creatorUsername);
+        if (creator.isEmpty()) {
+            logger.error("Cannot find user with passed username");
+            return Optional.empty();
+        }
+        Optional<CustomerGroup> existingGroup = customerGroupRepository.findByCreatorIsAndName(creator.get(), groupName);
+        if (existingGroup.isEmpty()) {
+            CustomerGroup group = new CustomerGroup();
+            group.setName(groupName);
+            group.setDisplayColor(displayColor);
+            group.setCreator(creator.get());
+            CustomerGroup createdGroup = customerGroupRepository.save(group);
+            if (customersIds != null && !customersIds.isEmpty()) {
+                logger.debug("Assigning customers to requested group");
+                List<Customer> customersList = checkPermissionsToCustomers(
+                        customerRepository.findAllById(customersIds),
+                        creator.get(),
+                        permissions
+                );
+
+                customersList.forEach(customer -> {
+                    Set<CustomerGroup> assignedGroups = customer.getGroups();
+                    assignedGroups.add(createdGroup);
+                    customer.setGroups(assignedGroups);
+                });
+
+                customerRepository.saveAll(customersList);
+            }
+
+            return Optional.of(createdGroup);
         }
         logger.error("Error - customer with this name already exists for this user");
 

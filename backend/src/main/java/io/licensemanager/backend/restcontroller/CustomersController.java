@@ -2,6 +2,8 @@ package io.licensemanager.backend.restcontroller;
 
 import io.licensemanager.backend.configuration.setup.ROLES_PERMISSIONS;
 import io.licensemanager.backend.entity.Customer;
+import io.licensemanager.backend.entity.CustomerGroup;
+import io.licensemanager.backend.model.request.CustomerGroupRequest;
 import io.licensemanager.backend.model.request.CustomerRequest;
 import io.licensemanager.backend.service.CustomersService;
 import io.licensemanager.backend.util.AuthenticationUtils;
@@ -75,6 +77,42 @@ public class CustomersController {
                 .badRequest()
                 .body(Collections.singletonMap("message", String.format(
                         "Failed to create customer with name %s", request.getName()
+                        ))
+                );
+    }
+
+    @PostMapping(path = "/create_group")
+    public ResponseEntity<?> createGroupIfNotExists(@Valid @RequestBody final CustomerGroupRequest request) {
+        if (!request.isValid()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Collections.singletonMap("message", "Group name cannot be empty or null"));
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = AuthenticationUtils.parseUsername(authentication);
+        Set<ROLES_PERMISSIONS> permissions = AuthenticationUtils.parsePermissions(authentication);
+
+        Optional<CustomerGroup> createdGroup = customersService.createGroupIfNotExists(
+                request.getName(),
+                request.getDisplayColor(),
+                request.getCustomersIds(),
+                username,
+                permissions
+        );
+
+        if (createdGroup.isPresent()) {
+            return ResponseEntity
+                    .ok(Collections.singletonMap("message", String.format(
+                            "Successfully created group with name %s", createdGroup.get().getName()
+                            ))
+                    );
+        }
+
+        return ResponseEntity
+                .badRequest()
+                .body(Collections.singletonMap("message", String.format(
+                        "Failed to create group with name %s", request.getName()
                         ))
                 );
     }
