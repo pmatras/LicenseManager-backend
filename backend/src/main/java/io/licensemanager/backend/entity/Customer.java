@@ -29,7 +29,15 @@ public class Customer {
     @NotBlank
     private String name;
 
-    @ManyToMany(mappedBy = "customers")
+    @ManyToMany(
+            cascade = {CascadeType.MERGE},
+            fetch = FetchType.LAZY
+    )
+    @JoinTable(
+            name = "customers_customers_groups",
+            joinColumns = @JoinColumn(name = "customer_id"),
+            inverseJoinColumns = @JoinColumn(name = "customer_group_id")
+    )
     Set<CustomerGroup> groups;
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -44,6 +52,6 @@ public class Customer {
 
     @JsonIgnore
     @OneToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JoinColumn(name = "creator_id", referencedColumnName = "id")
     private User creator;
 }
