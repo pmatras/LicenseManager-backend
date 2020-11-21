@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -65,6 +66,33 @@ public class CustomersService {
         }
 
         return Collections.emptyList();
+    }
+
+    public Optional<Customer> createCustomerIfNotExists(final String customerName, final Set<String> groups,
+                                                        final String creatorsUsername) {
+        logger.debug("Creating new customer: {}", customerName);
+        Optional<User> creator = userRepository.findByUsername(creatorsUsername);
+        if (creator.isEmpty()) {
+            logger.error("Cannot find user with passed username");
+            return Optional.empty();
+        }
+        Optional<Customer> existingCustomer = customerRepository.findByCreatorIsAndName(creator.get(), customerName);
+        if (existingCustomer.isEmpty()) {
+            Customer customer = new Customer();
+            customer.setName(customerName);
+            customer.setCreationDate(LocalDateTime.now());
+            customer.setCreator(creator.get());
+            if (groups != null && !groups.isEmpty()) {
+                logger.debug("Assigning customer to requested groups");
+                Set<CustomerGroup> customerGroups = customerGroupRepository.findAllByCreatorIsAndNameIn(creator.get(), groups);
+                customer.setGroups(customerGroups);
+            }
+
+            return Optional.of(customerRepository.save(customer));
+        }
+        logger.error("Error - customer with this name already exists for this user");
+
+        return Optional.empty();
     }
 
 }
