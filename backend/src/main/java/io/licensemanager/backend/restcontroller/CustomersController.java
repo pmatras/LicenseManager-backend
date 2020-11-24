@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -31,8 +30,7 @@ public class CustomersController {
     private final CustomersService customersService;
 
     @GetMapping(path = "/customers_list")
-    public ResponseEntity<?> getCustomersList() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public ResponseEntity<?> getCustomersList(final Authentication authentication) {
         String username = AuthenticationUtils.parseUsername(authentication);
         Set<ROLES_PERMISSIONS> permissions = AuthenticationUtils.parsePermissions(authentication);
 
@@ -42,8 +40,7 @@ public class CustomersController {
     }
 
     @GetMapping(path = "/groups_list")
-    public ResponseEntity<?> getCustomersGroupsForUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public ResponseEntity<?> getCustomersGroupsForUser(final Authentication authentication) {
         String username = AuthenticationUtils.parseUsername(authentication);
 
         return ResponseEntity.ok(
@@ -52,14 +49,14 @@ public class CustomersController {
     }
 
     @PostMapping(path = "/create_customer")
-    public ResponseEntity<?> createCustomerIfNotExists(@Valid @RequestBody final CustomerRequest request) {
+    public ResponseEntity<?> createCustomerIfNotExists(@Valid @RequestBody final CustomerRequest request,
+                                                       final Authentication authentication) {
         if (!request.isValid()) {
             return ResponseEntity
                     .badRequest()
                     .body(Collections.singletonMap("message", "Customer's name cannot be empty or null"));
         }
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = AuthenticationUtils.parseUsername(authentication);
 
         Optional<Customer> createdCustomer = customersService.createCustomerIfNotExists(
@@ -82,14 +79,14 @@ public class CustomersController {
     }
 
     @PostMapping(path = "/create_group")
-    public ResponseEntity<?> createGroupIfNotExists(@Valid @RequestBody final CustomerGroupRequest request) {
+    public ResponseEntity<?> createGroupIfNotExists(@Valid @RequestBody final CustomerGroupRequest request,
+                                                    final Authentication authentication) {
         if (!request.isValid()) {
             return ResponseEntity
                     .badRequest()
                     .body(Collections.singletonMap("message", "Group name cannot be empty or null"));
         }
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = AuthenticationUtils.parseUsername(authentication);
         Set<ROLES_PERMISSIONS> permissions = AuthenticationUtils.parsePermissions(authentication);
 
