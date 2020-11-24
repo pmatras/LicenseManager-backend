@@ -151,4 +151,18 @@ public class CustomersController {
                 );
     }
 
+    @DeleteMapping(path = "/delete_customer")
+    public ResponseEntity<?> deleteCustomer(@RequestParam(name = "customer_id") final Long customerId,
+                                            final Authentication authentication) {
+        String username = AuthenticationUtils.parseUsername(authentication);
+        Set<ROLES_PERMISSIONS> permissions = AuthenticationUtils.parsePermissions(authentication);
+
+        return customersService.deleteCustomer(customerId, username, permissions) ?
+                ResponseEntity
+                        .ok(Collections.singletonMap("message", "Customer successfully deleted")) :
+                ResponseEntity
+                        .badRequest()
+                        .body(Collections.singletonMap("message", "Failed to delete customer"));
+    }
+
 }

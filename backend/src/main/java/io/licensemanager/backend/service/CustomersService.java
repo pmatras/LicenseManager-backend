@@ -185,4 +185,27 @@ public class CustomersService {
         return Optional.empty();
     }
 
+    @Transactional
+    public boolean deleteCustomer(final Long customerId, final String creatorsUsername,
+                                  final Set<ROLES_PERMISSIONS> permissions) {
+        logger.debug("Deleting customer with id {}", customerId);
+        Optional<User> creator = userRepository.findByUsername(creatorsUsername);
+        if (creator.isEmpty()) {
+            logger.error("Cannot find user with passed username");
+            return false;
+        }
+        Optional<Customer> customer =
+                permissions.contains(ROLES_PERMISSIONS.ALL) || permissions.contains(ROLES_PERMISSIONS.DELETE_ALL_CUSTOMERS) ?
+                        customerRepository.findById(customerId) :
+                        customerRepository.findByCreatorIsAndId(creator.get(), customerId);
+        if (customer.isPresent()) {
+            customerRepository.delete(customer.get());
+            return true;
+        }
+        logger.error("Failed to delete customer with id {} - customer doesn't exist or user doesn't have proper permissions",
+                customerId);
+
+        return false;
+    }
+
 }
