@@ -8,10 +8,12 @@ import io.licensemanager.backend.repository.CustomerGroupRepository;
 import io.licensemanager.backend.repository.CustomerRepository;
 import io.licensemanager.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -109,6 +111,7 @@ public class CustomersService {
         return Optional.empty();
     }
 
+    @Transactional
     public Optional<CustomerGroup> createGroupIfNotExists(final String groupName, final String displayColor,
                                                           final Set<Long> customersIds, final String creatorUsername,
                                                           final Set<ROLES_PERMISSIONS> permissions) {
@@ -145,6 +148,39 @@ public class CustomersService {
             return Optional.of(createdGroup);
         }
         logger.error("Error - customer with this name already exists for this user");
+
+        return Optional.empty();
+    }
+
+    @Transactional
+    public Optional<Customer> editCustomer(final Long customerId, final String newCustomerName,
+                                           final Set<String> customerGroups, final String creatorsUsername,
+                                           final Set<ROLES_PERMISSIONS> permissions) {
+        logger.debug("Editing customer with id {}", customerId);
+        Optional<User> creator = userRepository.findByUsername(creatorsUsername);
+        if (creator.isEmpty()) {
+            logger.error("Cannot find user with passed username");
+            return Optional.empty();
+        }
+        Optional<Customer> existingCustomer =
+                permissions.contains(ROLES_PERMISSIONS.ALL) || permissions.contains(ROLES_PERMISSIONS.EDIT_ALL_CUSTOMERS) ?
+                        customerRepository.findById(customerId) :
+                        customerRepository.findByCreatorIsAndId(creator.get(), customerId);
+        if (existingCustomer.isPresent()) {
+            Customer customer = existingCustomer.get();
+            customer.setLastModificationDate(LocalDateTime.now());
+            if (!StringUtils.isBlank(newCustomerName)) {
+                customer.setName(newCustomerName);
+            }
+            if (customerGroups != null) {
+                logger.debug("Changing customer's groups to requested ones");
+                Set<CustomerGroup> groups = customerGroupRepository.findAllByCreatorIsAndNameIn(creator.get(), customerGroups);
+                customer.setGroups(groups);
+            }
+
+            return Optional.of(customerRepository.save(customer));
+        }
+        logger.error("Error - customer with this id doesn't exist or user doesn't have proper permissions!");
 
         return Optional.empty();
     }

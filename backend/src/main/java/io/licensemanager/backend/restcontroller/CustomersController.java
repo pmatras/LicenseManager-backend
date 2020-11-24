@@ -5,6 +5,7 @@ import io.licensemanager.backend.entity.Customer;
 import io.licensemanager.backend.entity.CustomerGroup;
 import io.licensemanager.backend.model.request.CreateCustomerRequest;
 import io.licensemanager.backend.model.request.CustomerGroupRequest;
+import io.licensemanager.backend.model.request.EditCustomerRequest;
 import io.licensemanager.backend.service.CustomersService;
 import io.licensemanager.backend.util.AuthenticationUtils;
 import lombok.RequiredArgsConstructor;
@@ -110,6 +111,42 @@ public class CustomersController {
                 .badRequest()
                 .body(Collections.singletonMap("message", String.format(
                         "Failed to create group with name %s", request.getName()
+                        ))
+                );
+    }
+
+    @PutMapping(path = "/edit_customer")
+    public ResponseEntity<?> editCustomer(@Valid @RequestBody final EditCustomerRequest request,
+                                          final Authentication authentication) {
+        if (!request.isValid()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Collections.singletonMap("message", "Customer id cannot be null, name or groups must be specified"));
+        }
+
+        String username = AuthenticationUtils.parseUsername(authentication);
+        Set<ROLES_PERMISSIONS> permissions = AuthenticationUtils.parsePermissions(authentication);
+
+        Optional<Customer> editedCustomer = customersService.editCustomer(
+                request.getCustomerId(),
+                request.getNewName(),
+                request.getGroups(),
+                username,
+                permissions
+        );
+
+        if (editedCustomer.isPresent()) {
+            return ResponseEntity
+                    .ok(Collections.singletonMap("message", String.format(
+                            "Successfully edited customer with name %s", editedCustomer.get().getName()
+                            ))
+                    );
+        }
+
+        return ResponseEntity
+                .badRequest()
+                .body(Collections.singletonMap("message", String.format(
+                        "Failed to edit customer with id %d", request.getCustomerId()
                         ))
                 );
     }
