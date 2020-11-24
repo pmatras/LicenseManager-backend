@@ -3,8 +3,8 @@ package io.licensemanager.backend.restcontroller;
 import io.licensemanager.backend.configuration.setup.ROLES_PERMISSIONS;
 import io.licensemanager.backend.entity.Customer;
 import io.licensemanager.backend.entity.CustomerGroup;
+import io.licensemanager.backend.model.request.CreateCustomerRequest;
 import io.licensemanager.backend.model.request.CustomerGroupRequest;
-import io.licensemanager.backend.model.request.CustomerRequest;
 import io.licensemanager.backend.service.CustomersService;
 import io.licensemanager.backend.util.AuthenticationUtils;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +49,7 @@ public class CustomersController {
     }
 
     @PostMapping(path = "/create_customer")
-    public ResponseEntity<?> createCustomerIfNotExists(@Valid @RequestBody final CustomerRequest request,
+    public ResponseEntity<?> createCustomerIfNotExists(@Valid @RequestBody final CreateCustomerRequest request,
                                                        final Authentication authentication) {
         if (!request.isValid()) {
             return ResponseEntity

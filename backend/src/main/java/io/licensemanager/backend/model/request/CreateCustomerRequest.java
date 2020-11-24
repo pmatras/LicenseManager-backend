@@ -10,7 +10,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class CustomerRequest {
+public class CreateCustomerRequest {
     private String name;
     private Set<String> groups;
 
