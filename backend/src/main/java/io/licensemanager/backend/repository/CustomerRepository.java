@@ -11,5 +11,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     Optional<Customer> findByCreatorIsAndName(final User creator, final String name);
 
+    Optional<Customer> findByCreatorIsAndId(final User creator, final Long customerId);
+
     List<Customer> findAllByCreatorIs(final User creator);
 }
