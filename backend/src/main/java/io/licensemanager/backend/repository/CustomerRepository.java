@@ -16,5 +16,5 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     List<Customer> findAllByCreatorIs(final User creator);
 
-    List<Customer> findAllByCreatorIsAndGroupsContains(final User creator, final CustomerGroup group);
+    List<Customer> findAllByGroupsContains(final CustomerGroup group);
 }

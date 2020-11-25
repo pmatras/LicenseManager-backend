@@ -247,7 +247,7 @@ public class CustomersService {
         Optional<CustomerGroup> group = customerGroupRepository.findByCreatorIsAndId(creator.get(), groupId);
         if (group.isPresent()) {
             CustomerGroup groupToDelete = group.get();
-            List<Customer> customers = customerRepository.findAllByCreatorIsAndGroupsContains(creator.get(), groupToDelete);
+            List<Customer> customers = customerRepository.findAllByGroupsContains(groupToDelete);
             customers.forEach(customer -> {
                 Set<CustomerGroup> groups = customer.getGroups();
                 groups.remove(groupToDelete);
