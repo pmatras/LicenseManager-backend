@@ -1,6 +1,6 @@
 package io.licensemanager.backend.service;
 
-import io.licensemanager.backend.configuration.setup.AVAILABLE_ROLES_PERMISSIONS;
+import io.licensemanager.backend.configuration.setup.ROLES_PERMISSIONS;
 import io.licensemanager.backend.entity.Role;
 import io.licensemanager.backend.entity.User;
 import io.licensemanager.backend.repository.ActivationTokenRepository;
@@ -194,8 +194,8 @@ public class AdminService {
     }
 
     public List<String> getAvailablePermissionsList() {
-        return Stream.of(AVAILABLE_ROLES_PERMISSIONS.values())
-                .map(AVAILABLE_ROLES_PERMISSIONS::name)
+        return Stream.of(ROLES_PERMISSIONS.values())
+                .map(ROLES_PERMISSIONS::name)
                 .collect(Collectors.toList());
     }
 }
