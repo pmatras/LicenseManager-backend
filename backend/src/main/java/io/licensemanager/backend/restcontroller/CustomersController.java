@@ -200,4 +200,17 @@ public class CustomersController {
                         ))
                 );
     }
+
+    @DeleteMapping(path = "/delete_group")
+    public ResponseEntity<?> deleteGroup(@RequestParam(name = "group_id") final Long groupId,
+                                         final Authentication authentication) {
+        String username = AuthenticationUtils.parseUsername(authentication);
+
+        return customersService.deleteGroup(groupId, username) ?
+                ResponseEntity
+                        .ok(Collections.singletonMap("message", "Group successfully deleted")) :
+                ResponseEntity
+                        .badRequest()
+                        .body(Collections.singletonMap("message", "Failed to delete group"));
+    }
 }

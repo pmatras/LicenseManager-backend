@@ -1,6 +1,7 @@
 package io.licensemanager.backend.repository;
 
 import io.licensemanager.backend.entity.Customer;
+import io.licensemanager.backend.entity.CustomerGroup;
 import io.licensemanager.backend.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -14,4 +15,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findByCreatorIsAndId(final User creator, final Long customerId);
 
     List<Customer> findAllByCreatorIs(final User creator);
+
+    List<Customer> findAllByCreatorIsAndGroupsContains(final User creator, final CustomerGroup group);
 }

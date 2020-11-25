@@ -211,6 +211,7 @@ public class CustomersService {
     @Transactional
     public Optional<CustomerGroup> editGroup(final Long groupId, final String newGroupName,
                                              final String newDisplayColor, final String creatorsUsername) {
+        logger.debug("Editing group with id {}", groupId);
         Optional<User> creator = userRepository.findByUsername(creatorsUsername);
         if (creator.isEmpty()) {
             logger.error("Cannot find user with passed username");
@@ -229,9 +230,36 @@ public class CustomersService {
 
             return Optional.of(customerGroupRepository.save(group));
         }
-        logger.error("Requested group doesn't exist for this user");
+        logger.error("Error - requested group doesn't exist for this user");
 
         return Optional.empty();
+    }
+
+    @Transactional
+    public boolean deleteGroup(final Long groupId, final String creatorsUsername) {
+        logger.debug("Deleting group with id {}", groupId);
+        Optional<User> creator = userRepository.findByUsername(creatorsUsername);
+        if (creator.isEmpty()) {
+            logger.error("Cannot find user with passed username");
+            return false;
+        }
+
+        Optional<CustomerGroup> group = customerGroupRepository.findByCreatorIsAndId(creator.get(), groupId);
+        if (group.isPresent()) {
+            CustomerGroup groupToDelete = group.get();
+            List<Customer> customers = customerRepository.findAllByCreatorIsAndGroupsContains(creator.get(), groupToDelete);
+            customers.forEach(customer -> {
+                Set<CustomerGroup> groups = customer.getGroups();
+                groups.remove(groupToDelete);
+                customer.setGroups(groups);
+            });
+            customerGroupRepository.delete(groupToDelete);
+
+            return true;
+        }
+        logger.error("Error - requested group doesn't exist fot this user");
+
+        return false;
     }
 
 }
