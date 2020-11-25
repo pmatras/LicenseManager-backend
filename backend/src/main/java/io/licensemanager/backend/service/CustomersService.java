@@ -208,4 +208,30 @@ public class CustomersService {
         return false;
     }
 
+    @Transactional
+    public Optional<CustomerGroup> editGroup(final Long groupId, final String newGroupName,
+                                             final String newDisplayColor, final String creatorsUsername) {
+        Optional<User> creator = userRepository.findByUsername(creatorsUsername);
+        if (creator.isEmpty()) {
+            logger.error("Cannot find user with passed username");
+            return Optional.empty();
+        }
+
+        Optional<CustomerGroup> existingGroup = customerGroupRepository.findByCreatorIsAndId(creator.get(), groupId);
+        if (existingGroup.isPresent()) {
+            CustomerGroup group = existingGroup.get();
+            if (!StringUtils.isBlank(newGroupName)) {
+                group.setName(newGroupName);
+            }
+            if (!StringUtils.isBlank(newDisplayColor)) {
+                group.setDisplayColor(newDisplayColor);
+            }
+
+            return Optional.of(customerGroupRepository.save(group));
+        }
+        logger.error("Requested group doesn't exist for this user");
+
+        return Optional.empty();
+    }
+
 }

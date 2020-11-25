@@ -15,4 +15,6 @@ public interface CustomerGroupRepository extends JpaRepository<CustomerGroup, Lo
     Set<CustomerGroup> findAllByCreatorIsAndNameIn(final User creator, final Set<String> names);
 
     Optional<CustomerGroup> findByCreatorIsAndName(final User creator, final String name);
+
+    Optional<CustomerGroup> findByCreatorIsAndId(final User creator, final Long groupId);
 }

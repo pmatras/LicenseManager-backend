@@ -5,6 +5,7 @@ import io.licensemanager.backend.entity.Customer;
 import io.licensemanager.backend.entity.CustomerGroup;
 import io.licensemanager.backend.model.request.CreateCustomerRequest;
 import io.licensemanager.backend.model.request.CustomerGroupRequest;
+import io.licensemanager.backend.model.request.EditCustomerGroupRequest;
 import io.licensemanager.backend.model.request.EditCustomerRequest;
 import io.licensemanager.backend.service.CustomersService;
 import io.licensemanager.backend.util.AuthenticationUtils;
@@ -165,4 +166,38 @@ public class CustomersController {
                         .body(Collections.singletonMap("message", "Failed to delete customer"));
     }
 
+    @PutMapping(path = "/edit_group")
+    public ResponseEntity<?> editGroup(@Valid @RequestBody final EditCustomerGroupRequest request,
+                                       final Authentication authentication) {
+        if (!request.isValid()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Collections.singletonMap("message",
+                            "Group id cannot be null, name or display color must be specified"));
+        }
+
+        String username = AuthenticationUtils.parseUsername(authentication);
+
+        Optional<CustomerGroup> editedGroup = customersService.editGroup(
+                request.getGroupId(),
+                request.getNewName(),
+                request.getNewDisplayColor(),
+                username
+        );
+
+        if (editedGroup.isPresent()) {
+            return ResponseEntity
+                    .ok(Collections.singletonMap("message", String.format(
+                            "Successfully edited group with name %s", editedGroup.get().getName()
+                            ))
+                    );
+        }
+
+        return ResponseEntity
+                .badRequest()
+                .body(Collections.singletonMap("message", String.format(
+                        "Failed to edit group with id %d", request.getGroupId()
+                        ))
+                );
+    }
 }
