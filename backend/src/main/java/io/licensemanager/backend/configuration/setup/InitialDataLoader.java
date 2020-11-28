@@ -24,7 +24,6 @@ public class InitialDataLoader {
     private static final Logger logger = LoggerFactory.getLogger(InitialDataLoader.class);
 
     private static final String ADMIN_ROLE_NAME = "ADMIN";
-    private static final String ADMIN_PERMISSION_NAME = "ALL";
     private static final String ADMIN_USERNAME = "admin";
     private static final String ADMIN_PASSWORD = "admin";
 
@@ -45,7 +44,7 @@ public class InitialDataLoader {
             logger.info("Creating default admin role in system");
             Role role = new Role();
             role.setName(ADMIN_ROLE_NAME);
-            role.setPermissions(Set.of(ADMIN_PERMISSION_NAME));
+            role.setPermissions(Set.of(ROLES_PERMISSIONS.ALL.name()));
 
             return roleRepository.save(role);
         }
