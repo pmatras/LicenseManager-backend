@@ -1,5 +1,6 @@
 package io.licensemanager.backend.service;
 
+import io.licensemanager.backend.configuration.setup.SUPPORTED_FIELD_TYPES;
 import io.licensemanager.backend.entity.LicenseTemplate;
 import io.licensemanager.backend.entity.User;
 import io.licensemanager.backend.repository.LicenseTemplateRepository;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,13 +29,13 @@ public class LicenseTemplateService {
     private final UserRepository userRepository;
 
     public List<String> getSupportedFieldTypes() {
-        return Stream.of(SUPPORTED_FIELDS_TYPES.values())
+        return Stream.of(SUPPORTED_FIELD_TYPES.values())
                 .map(Enum::name)
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public Optional<LicenseTemplate> createLicenseTemplate(final String name, final Map<String, String> fields,
+    public Optional<LicenseTemplate> createLicenseTemplate(final String name, final Map<String, Class> fields,
                                                            final String creatorsUsername) {
         logger.debug("Creating new license template with name {}", name);
         Optional<LicenseTemplate> existingTemplate = licenseTemplateRepository.findByName(name);
@@ -47,7 +47,7 @@ public class LicenseTemplateService {
             }
             LicenseTemplate template = new LicenseTemplate();
             template.setName(name);
-            template.setFields(parseFieldTypes(fields));
+            template.setFields(fields);
             template.setCreationTime(LocalDateTime.now());
             template.setCreator(creator.get());
 
@@ -58,26 +58,4 @@ public class LicenseTemplateService {
         return Optional.empty();
     }
 
-    private Map<String, Class> parseFieldTypes(final Map<String, String> fields) {
-        Map<String, Class> convertedFields = new HashMap<>();
-        fields.forEach((key, value) -> {
-            try {
-                convertedFields.put(key, Class.forName(String.format("java.lang.%s", value)));
-            } catch (ClassNotFoundException e) {
-                logger.error("{} isn't correct type name, this template field will be omitted", value);
-            }
-        });
-
-        return convertedFields;
-    }
-}
-
-enum SUPPORTED_FIELDS_TYPES {
-    String,
-    Integer,
-    Long,
-    Float,
-    Double,
-    Boolean,
-    Character
 }

@@ -1,5 +1,7 @@
 package io.licensemanager.backend.model.request;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.licensemanager.backend.configuration.deserialization.LicenseTemplateFieldsConverter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +14,8 @@ import java.util.Map;
 @Data
 public class LicenseTemplateRequest {
     private String name;
-    private Map<String, String> fields;
+    @JsonDeserialize(converter = LicenseTemplateFieldsConverter.class)
+    private Map<String, Class> fields;
 
     public boolean isValid() {
         return !StringUtils.isBlank(name) &&
