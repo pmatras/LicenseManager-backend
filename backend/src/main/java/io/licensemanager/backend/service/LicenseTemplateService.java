@@ -28,6 +28,10 @@ public class LicenseTemplateService {
     private final LicenseTemplateRepository licenseTemplateRepository;
     private final UserRepository userRepository;
 
+    public List<LicenseTemplate> getLicenseTemplatesList() {
+        return licenseTemplateRepository.findAll();
+    }
+
     public List<String> getSupportedFieldTypes() {
         return Stream.of(SUPPORTED_FIELD_TYPES.values())
                 .map(Enum::name)

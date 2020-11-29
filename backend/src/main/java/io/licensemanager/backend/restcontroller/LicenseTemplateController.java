@@ -23,7 +23,6 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/api/templates")
-@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class LicenseTemplateController {
 
@@ -31,12 +30,20 @@ public class LicenseTemplateController {
 
     private final LicenseTemplateService licenseTemplateService;
 
+    @GetMapping(path = "/list")
+    public ResponseEntity<?> getLicenseTemplatesList() {
+        return ResponseEntity
+                .ok(licenseTemplateService.getLicenseTemplatesList());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/supported_types")
     public ResponseEntity<?> getSupportedFieldTypes() {
         return ResponseEntity
                 .ok(licenseTemplateService.getSupportedFieldTypes());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/create")
     public ResponseEntity<?> createLicenseTemplate(@Valid @RequestBody final LicenseTemplateRequest request,
                                                    final Authentication authentication) {
