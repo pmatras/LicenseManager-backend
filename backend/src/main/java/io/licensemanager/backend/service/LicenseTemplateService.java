@@ -62,4 +62,18 @@ public class LicenseTemplateService {
         return Optional.empty();
     }
 
+    @Transactional
+    public boolean deleteLicenseTemplate(final Long templateId) {
+        logger.debug("Deleting license template with id {}", templateId);
+        Optional<LicenseTemplate> templateToDelete = licenseTemplateRepository.findById(templateId);
+        if (templateToDelete.isPresent()) {
+            licenseTemplateRepository.delete(templateToDelete.get());
+
+            return true;
+        }
+        logger.error("Requested license template doesn't exist");
+
+        return false;
+    }
+
 }
