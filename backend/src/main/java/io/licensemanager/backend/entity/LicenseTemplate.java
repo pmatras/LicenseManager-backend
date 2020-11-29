@@ -1,5 +1,9 @@
 package io.licensemanager.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,12 +36,17 @@ public class LicenseTemplate {
     @Column(name = "field_type")
     private Map<String, Class> fields;
 
+    @JsonIgnore
     @OneToOne(cascade = CascadeType.MERGE)
     private User creator;
 
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Basic
     private LocalDateTime creationTime;
 
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Basic
     private LocalDateTime editionTime;
 }
