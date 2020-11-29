@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import io.licensemanager.backend.configuration.serialization.ClassToSimpleNameConverter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,6 +28,7 @@ public class LicenseTemplate {
     @Column(nullable = false, unique = true)
     private String name;
 
+    @JsonSerialize(contentConverter = ClassToSimpleNameConverter.class)
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "license_templates_fields",
