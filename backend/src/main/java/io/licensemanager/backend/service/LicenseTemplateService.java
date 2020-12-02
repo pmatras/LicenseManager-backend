@@ -5,6 +5,7 @@ import io.licensemanager.backend.entity.LicenseTemplate;
 import io.licensemanager.backend.entity.User;
 import io.licensemanager.backend.repository.LicenseTemplateRepository;
 import io.licensemanager.backend.repository.UserRepository;
+import io.licensemanager.backend.util.CryptoUtils;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.security.KeyPair;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +56,11 @@ public class LicenseTemplateService {
             template.setFields(fields);
             template.setCreationTime(LocalDateTime.now());
             template.setCreator(creator.get());
+            Optional<KeyPair> keyPair = CryptoUtils.generateKeyPair();
+            if (keyPair.isPresent()) {
+                template.setPrivateKey(keyPair.get().getPrivate());
+                template.setPublicKey(keyPair.get().getPublic());
+            }
 
             return Optional.of(licenseTemplateRepository.save(template));
         }

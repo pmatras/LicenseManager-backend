@@ -10,6 +10,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -51,4 +53,10 @@ public class LicenseTemplate {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Basic
     private LocalDateTime editionTime;
+
+    @JsonIgnore
+    private PublicKey publicKey;
+
+    @JsonIgnore
+    private PrivateKey privateKey;
 }
