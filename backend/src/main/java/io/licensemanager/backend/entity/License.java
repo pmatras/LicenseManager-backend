@@ -21,6 +21,8 @@ public class License {
 
     private String name;
 
+    private String licenseFileName;
+
     private String licenseKey;
 
     private LocalDateTime generationDate;
