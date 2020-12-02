@@ -1,5 +1,6 @@
 package io.licensemanager.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,6 +31,7 @@ public class License {
 
     private LocalDateTime expirationDate;
 
+    @JsonIgnore
     @Lob
     private byte[] licenseFile;
 
