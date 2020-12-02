@@ -23,6 +23,7 @@ public class License {
 
     private String licenseFileName;
 
+    @Lob
     private String licenseKey;
 
     private LocalDateTime generationDate;
