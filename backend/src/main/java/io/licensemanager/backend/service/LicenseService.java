@@ -92,6 +92,7 @@ public class LicenseService {
         license.setCustomer(customer);
         license.setUsedTemplate(template);
         license.setCreator(creator.get());
+        license.setIsExpired(currentDate.isBefore(expirationDate));
 
         String licenseFileContent = parseLicenseToJson(
                 template.getFields(),
