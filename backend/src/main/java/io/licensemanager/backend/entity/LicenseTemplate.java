@@ -41,7 +41,8 @@ public class LicenseTemplate {
     private Map<String, Class> fields;
 
     @JsonIgnore
-    @OneToOne(cascade = CascadeType.MERGE)
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "creator_id")
     private User creator;
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)

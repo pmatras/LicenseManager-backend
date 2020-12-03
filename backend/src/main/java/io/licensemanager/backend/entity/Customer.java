@@ -51,7 +51,7 @@ public class Customer {
     private LocalDateTime lastModificationDate;
 
     @JsonIgnore
-    @OneToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "creator_id", referencedColumnName = "id")
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "creator_id")
     private User creator;
 }
