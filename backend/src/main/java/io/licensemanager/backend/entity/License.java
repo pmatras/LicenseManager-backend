@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -58,5 +59,9 @@ public class License {
     @JoinColumn(name = "creator_id")
     private User creator;
 
+    @Type(type = "yes_no")
     private Boolean isExpired;
+
+    @Type(type = "yes_no")
+    private Boolean isActive;
 }
