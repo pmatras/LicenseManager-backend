@@ -92,7 +92,8 @@ public class LicenseService {
         license.setCustomer(customer);
         license.setUsedTemplate(template);
         license.setCreator(creator.get());
-        license.setIsExpired(currentDate.isBefore(expirationDate));
+        license.setIsExpired(!currentDate.isBefore(expirationDate));
+        license.setIsActive(true);
 
         String licenseFileContent = parseLicenseToJson(
                 template.getFields(),
@@ -154,6 +155,41 @@ public class LicenseService {
         }
 
         return json;
+    }
+
+    private boolean changeActiveStatus(final Long licenseId, final String username,
+                                       final Set<ROLES_PERMISSIONS> permissions, final Boolean value) {
+        logger.debug("Changing active status of license with id {} to {}", licenseId, value);
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isEmpty()) {
+            logger.error("Cannot find user with passed username");
+            return false;
+        }
+
+        Optional<License> license;
+        if (permissions.contains(ROLES_PERMISSIONS.ALL) || permissions.contains(ROLES_PERMISSIONS.DELETE_ALL_LICENSES)) {
+            license = licenseRepository.findById(licenseId);
+        } else {
+            license = licenseRepository.findByIdAndAndCreatorIs(licenseId, user.get());
+        }
+
+        if (license.isPresent()) {
+            License licenseToChange = license.get();
+            licenseToChange.setIsActive(value);
+            licenseRepository.save(licenseToChange);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean disableLicense(final Long licenseId, final String username, final Set<ROLES_PERMISSIONS> permissions) {
+        return changeActiveStatus(licenseId, username, permissions, false);
+    }
+
+    public boolean reactivateLicense(final Long licenseId, final String username, final Set<ROLES_PERMISSIONS> permissions) {
+        return changeActiveStatus(licenseId, username, permissions, true);
     }
 
 }

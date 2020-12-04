@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Collections;
@@ -75,4 +72,34 @@ public class LicenseController {
                 .badRequest()
                 .body(Collections.singletonMap("message", "Failed to create license"));
     }
+
+    @PostMapping(path = "/disable")
+    public ResponseEntity<?> disableLicense(@RequestParam(name = "license_id") final Long licenseId,
+                                            final Authentication authentication) {
+        String username = AuthenticationUtils.parseUsername(authentication);
+        Set<ROLES_PERMISSIONS> permissions = AuthenticationUtils.parsePermissions(authentication);
+
+        return licenseService.disableLicense(licenseId, username, permissions) ?
+                ResponseEntity
+                        .ok(Collections.singletonMap("message", "License successfully disabled")) :
+                ResponseEntity
+                        .badRequest()
+                        .body(Collections.singletonMap("message", "Failed to disable license"));
+    }
+
+    @PostMapping(path = "/reactivate")
+    public ResponseEntity<?> activateLicense(@RequestParam(name = "license_id") final Long licenseId,
+                                             final Authentication authentication) {
+        String username = AuthenticationUtils.parseUsername(authentication);
+        Set<ROLES_PERMISSIONS> permissions = AuthenticationUtils.parsePermissions(authentication);
+
+        return licenseService.reactivateLicense(licenseId, username, permissions) ?
+                ResponseEntity
+                        .ok(Collections.singletonMap("message", "License successfully reactivated")) :
+                ResponseEntity
+                        .badRequest()
+                        .body(Collections.singletonMap("message", "Failed to reactivate license"));
+
+    }
+
 }
