@@ -18,7 +18,7 @@ public class LicenseScheduledTask {
 
     private final LicenseService licenseService;
 
-    @Scheduled(fixedRate = 60 * 1000L, initialDelay = 1000L)
+    @Scheduled(fixedRate = 60 * 60 * 1000L, initialDelay = 5 * 60 * 1000L)
     public void checkLicensesValidityTask() {
         logger.info("Checking licenses validity task started");
         LicensesStatus licensesStatus = licenseService.checkLicensesValidity();
