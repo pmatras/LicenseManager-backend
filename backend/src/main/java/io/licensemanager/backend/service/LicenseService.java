@@ -8,6 +8,7 @@ import io.licensemanager.backend.entity.Customer;
 import io.licensemanager.backend.entity.License;
 import io.licensemanager.backend.entity.LicenseTemplate;
 import io.licensemanager.backend.entity.User;
+import io.licensemanager.backend.model.response.LicenseFileContentResponse;
 import io.licensemanager.backend.repository.CustomerRepository;
 import io.licensemanager.backend.repository.LicenseRepository;
 import io.licensemanager.backend.repository.LicenseTemplateRepository;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -51,6 +53,40 @@ public class LicenseService {
         }
 
         return licenseRepository.findAllByCreatorIs(creator);
+    }
+
+    @Transactional
+    public LicenseFileContentResponse getDecryptedLicenseFileContent(final Long licenseId, final String username,
+                                                                     final Set<ROLES_PERMISSIONS> permissions) {
+        logger.debug("Getting encrypted license file's content");
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isEmpty()) {
+            logger.error("Cannot find user which requested license file content");
+            return new LicenseFileContentResponse(false, "");
+        }
+        User creator = user.get();
+        Optional<License> license;
+        if (permissions.contains(ROLES_PERMISSIONS.VIEW_ALL_CUSTOMERS)
+                || permissions.contains(ROLES_PERMISSIONS.ALL)) {
+            license = licenseRepository.findById(licenseId);
+        } else {
+            license = licenseRepository.findByIdAndCreatorIs(licenseId, creator);
+        }
+
+        if (license.isPresent()) {
+            License licenseToDecrypt = license.get();
+            byte[] encrypted = licenseToDecrypt.getLicenseFile();
+
+            PublicKey publicKey = licenseToDecrypt.getUsedTemplate().getPublicKey();
+            return new LicenseFileContentResponse(
+                    CryptoUtils.verifySign(encrypted, licenseToDecrypt.getLicenseKey(), publicKey),
+                    CryptoUtils.decrypt(encrypted, publicKey)
+            );
+
+        }
+        logger.error("Requested license doesn't exist");
+
+        return new LicenseFileContentResponse(false, "");
     }
 
     @Transactional
@@ -170,7 +206,7 @@ public class LicenseService {
         if (permissions.contains(ROLES_PERMISSIONS.ALL) || permissions.contains(ROLES_PERMISSIONS.DELETE_ALL_LICENSES)) {
             license = licenseRepository.findById(licenseId);
         } else {
-            license = licenseRepository.findByIdAndAndCreatorIs(licenseId, user.get());
+            license = licenseRepository.findByIdAndCreatorIs(licenseId, user.get());
         }
 
         if (license.isPresent()) {

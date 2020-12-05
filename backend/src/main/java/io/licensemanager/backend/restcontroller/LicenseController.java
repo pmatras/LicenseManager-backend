@@ -37,6 +37,16 @@ public class LicenseController {
                 .ok(licenseService.getLicensesList(username, permissions));
     }
 
+    @GetMapping(path = "/decrypted_content")
+    public ResponseEntity<?> getDecryptedLicenseFileContent(@RequestParam(name = "license_id") final Long licenseId,
+                                                            final Authentication authentication) {
+        String username = AuthenticationUtils.parseUsername(authentication);
+        Set<ROLES_PERMISSIONS> permissions = AuthenticationUtils.parsePermissions(authentication);
+
+        return ResponseEntity
+                .ok(licenseService.getDecryptedLicenseFileContent(licenseId, username, permissions));
+    }
+
     @PostMapping(path = "/create")
     public ResponseEntity<?> generateNewLicense(@Valid @RequestBody final LicenseRequest request,
                                                 final Authentication authentication) {
