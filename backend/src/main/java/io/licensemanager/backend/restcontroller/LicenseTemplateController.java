@@ -84,6 +84,18 @@ public class LicenseTemplateController {
                         .ok(Collections.singletonMap("message", "License template successfully deleted")) :
                 ResponseEntity
                         .badRequest()
-                        .body(Collections.singletonMap("message", "Failed to delete license template"));
+                        .body(Collections.singletonMap(
+                                "message", "License template doesn't exist or is used by some license(s)"
+                                )
+                        );
+    }
+
+    @GetMapping(path = "/public_key")
+    public ResponseEntity<?> getTemplatePublicKey(@RequestParam(name = "template_id") final Long templateId
+    ) {
+        return ResponseEntity
+                .ok(Collections.singletonMap("publicKey",
+                        licenseTemplateService.getTemplatePublicKey(templateId)));
+
     }
 }
