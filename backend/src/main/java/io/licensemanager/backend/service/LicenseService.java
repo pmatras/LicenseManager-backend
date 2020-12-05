@@ -8,6 +8,7 @@ import io.licensemanager.backend.entity.Customer;
 import io.licensemanager.backend.entity.License;
 import io.licensemanager.backend.entity.LicenseTemplate;
 import io.licensemanager.backend.entity.User;
+import io.licensemanager.backend.model.LicensesStatus;
 import io.licensemanager.backend.model.response.LicenseFileContentResponse;
 import io.licensemanager.backend.repository.CustomerRepository;
 import io.licensemanager.backend.repository.LicenseRepository;
@@ -226,6 +227,30 @@ public class LicenseService {
 
     public boolean reactivateLicense(final Long licenseId, final String username, final Set<ROLES_PERMISSIONS> permissions) {
         return changeActiveStatus(licenseId, username, permissions, true);
+    }
+
+    @Transactional
+    public LicensesStatus checkLicensesValidity() {
+        logger.info("Checking licenses validity started");
+        LicensesStatus licensesStatus = new LicensesStatus();
+        List<License> licenses = licenseRepository.findAll();
+        LocalDateTime currentTime = LocalDateTime.now();
+
+        licenses.forEach(license -> {
+            LocalDateTime expirationDate = license.getExpirationDate();
+            if (currentTime.isBefore(expirationDate)) {
+                licensesStatus.incrementValidLicensesCount();
+                license.setIsExpired(false);
+            } else {
+                licensesStatus.incrementExpiredLicensesCount();
+                license.setIsExpired(true);
+            }
+        });
+
+        licenseRepository.saveAll(licenses);
+        logger.info("Checking licenses validity finished");
+
+        return licensesStatus;
     }
 
 }
