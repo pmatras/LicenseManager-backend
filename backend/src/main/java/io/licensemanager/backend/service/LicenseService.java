@@ -13,11 +13,13 @@ import io.licensemanager.backend.entity.User;
 import io.licensemanager.backend.model.FileDetails;
 import io.licensemanager.backend.model.LicensesStatus;
 import io.licensemanager.backend.model.response.LicenseFileContentResponse;
+import io.licensemanager.backend.model.response.LicensesStatistics;
 import io.licensemanager.backend.repository.CustomerRepository;
 import io.licensemanager.backend.repository.LicenseRepository;
 import io.licensemanager.backend.repository.LicenseTemplateRepository;
 import io.licensemanager.backend.repository.UserRepository;
 import io.licensemanager.backend.util.CryptoUtils;
+import io.licensemanager.backend.util.LicensesStatisticsGenerator;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -367,6 +369,20 @@ public class LicenseService {
 
         return file;
 
+    }
+
+    public LicensesStatistics getLicensesStats(final String username, final Set<ROLES_PERMISSIONS> permissions) {
+        logger.debug("Getting licenses statistics");
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isEmpty()) {
+            logger.error("Cannot find user with passed username");
+        }
+
+        if (permissions.contains(ROLES_PERMISSIONS.ALL) || permissions.contains(ROLES_PERMISSIONS.DELETE_ALL_LICENSES)) {
+            return LicensesStatisticsGenerator.generateStats(licenseRepository.findAll());
+        }
+
+        return LicensesStatisticsGenerator.generateStats(licenseRepository.findAllByCreatorIs(user.get()));
     }
 
     @Transactional

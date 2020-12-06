@@ -176,4 +176,14 @@ public class LicenseController {
                 .body(new ByteArrayResource(fileDetails.getContent()));
 
     }
+
+    @GetMapping(path = "/stats")
+    public ResponseEntity<?> getLicensesStatistics(final Authentication authentication) {
+        String username = AuthenticationUtils.parseUsername(authentication);
+        Set<ROLES_PERMISSIONS> permissions = AuthenticationUtils.parsePermissions(authentication);
+
+        return ResponseEntity.ok(
+                licenseService.getLicensesStats(username, permissions)
+        );
+    }
 }
