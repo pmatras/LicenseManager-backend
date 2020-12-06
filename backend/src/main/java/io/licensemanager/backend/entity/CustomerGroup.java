@@ -27,7 +27,7 @@ public class CustomerGroup {
     private String displayColor;
 
     @JsonIgnore
-    @OneToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "creator_id", referencedColumnName = "id")
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "creator_id")
     private User creator;
 }

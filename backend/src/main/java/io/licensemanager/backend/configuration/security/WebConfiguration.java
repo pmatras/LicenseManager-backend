@@ -2,6 +2,7 @@ package io.licensemanager.backend.configuration.security;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -30,6 +31,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                         HttpMethod.DELETE.name(),
                         HttpMethod.HEAD.name()
                 )
-                .maxAge(3600L);
+                .maxAge(3600L)
+                .exposedHeaders(HttpHeaders.CONTENT_DISPOSITION);
     }
 }
