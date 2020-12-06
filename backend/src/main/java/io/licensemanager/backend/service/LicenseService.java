@@ -10,6 +10,7 @@ import io.licensemanager.backend.entity.Customer;
 import io.licensemanager.backend.entity.License;
 import io.licensemanager.backend.entity.LicenseTemplate;
 import io.licensemanager.backend.entity.User;
+import io.licensemanager.backend.model.FileDetails;
 import io.licensemanager.backend.model.LicensesStatus;
 import io.licensemanager.backend.model.response.LicenseFileContentResponse;
 import io.licensemanager.backend.repository.CustomerRepository;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.time.LocalDateTime;
@@ -295,6 +297,75 @@ public class LicenseService {
         logger.error("Failed to change license's expiration date - requested license doesn't exist");
 
         return false;
+
+    }
+
+    @Transactional
+    public FileDetails getLicenseFile(final Long licenseId, final String username,
+                                      final Set<ROLES_PERMISSIONS> permissions) {
+        logger.info("Getting license file");
+        FileDetails file = new FileDetails();
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isEmpty()) {
+            logger.error("Cannot find user with passed username");
+            return file;
+        }
+
+        Optional<License> license;
+        if (permissions.contains(ROLES_PERMISSIONS.ALL) || permissions.contains(ROLES_PERMISSIONS.VIEW_ALL_LICENSES)) {
+            license = licenseRepository.findById(licenseId);
+        } else {
+            license = licenseRepository.findByIdAndCreatorIs(licenseId, user.get());
+        }
+
+        if (license.isPresent()) {
+            License licenseToDownload = license.get();
+            file.setFileName(licenseToDownload.getLicenseFileName());
+            file.setContentLength(licenseToDownload.getLicenseFile().length);
+            file.setContent(licenseToDownload.getLicenseFile());
+
+            return file;
+        }
+        logger.error("License with requested id doesn't exist");
+
+        return file;
+    }
+
+    @Transactional
+    public FileDetails getLicenseFileKeys(final Long licenseId, final String username, final Set<ROLES_PERMISSIONS> permissions) {
+        logger.info("Getting license file keys");
+        FileDetails file = new FileDetails();
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isEmpty()) {
+            logger.error("Cannot find user with passed username");
+            return file;
+        }
+
+        Optional<License> license;
+        if (permissions.contains(ROLES_PERMISSIONS.ALL) || permissions.contains(ROLES_PERMISSIONS.VIEW_ALL_LICENSES)) {
+            license = licenseRepository.findById(licenseId);
+        } else {
+            license = licenseRepository.findByIdAndCreatorIs(licenseId, user.get());
+        }
+
+        if (license.isPresent()) {
+            License licenseToDownload = license.get();
+            file.setFileName(String.format("%skeys", licenseToDownload.getLicenseFileName()));
+            StringBuilder licenseKeys = new StringBuilder();
+            licenseKeys
+                    .append("public RSA key:\n")
+                    .append(Base64.getEncoder().encodeToString(licenseToDownload.getUsedTemplate().getPublicKey().getEncoded()))
+                    .append("\n\nlicense key:\n")
+                    .append(licenseToDownload.getLicenseKey());
+            byte[] encoded = licenseKeys.toString().getBytes(StandardCharsets.UTF_8);
+            file.setContentLength(encoded.length);
+            file.setContent(encoded);
+
+            return file;
+        }
+        logger.error("License with requested id doesn't exist");
+
+        return file;
 
     }
 

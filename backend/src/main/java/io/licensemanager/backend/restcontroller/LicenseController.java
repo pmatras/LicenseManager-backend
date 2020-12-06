@@ -2,6 +2,7 @@ package io.licensemanager.backend.restcontroller;
 
 import io.licensemanager.backend.configuration.setup.ROLES_PERMISSIONS;
 import io.licensemanager.backend.entity.License;
+import io.licensemanager.backend.model.FileDetails;
 import io.licensemanager.backend.model.request.LicenseRequest;
 import io.licensemanager.backend.service.LicenseService;
 import io.licensemanager.backend.util.AuthenticationUtils;
@@ -9,12 +10,17 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -128,4 +134,46 @@ public class LicenseController {
 
     }
 
+    @GetMapping(path = "/download_file")
+    public ResponseEntity<?> downloadLicenseFile(@RequestParam(name = "license_id") final Long licenseId,
+                                                 final Authentication authentication) {
+        String username = AuthenticationUtils.parseUsername(authentication);
+        Set<ROLES_PERMISSIONS> permissions = AuthenticationUtils.parsePermissions(authentication);
+
+        FileDetails fileDetails = licenseService.getLicenseFile(licenseId, username, permissions);
+
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(fileDetails.getContentLength())
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        String.format(
+                                "attachment; filename=%s",
+                                URLEncoder.encode(fileDetails.getFileName(), StandardCharsets.UTF_8)
+                        )
+                )
+                .body(new ByteArrayResource(fileDetails.getContent()));
+
+    }
+
+    @GetMapping(path = "/download_keys")
+    public ResponseEntity<?> downloadLicenseFileKeys(@RequestParam(name = "license_id") final Long licenseId,
+                                                     final Authentication authentication) {
+        String username = AuthenticationUtils.parseUsername(authentication);
+        Set<ROLES_PERMISSIONS> permissions = AuthenticationUtils.parsePermissions(authentication);
+
+        FileDetails fileDetails = licenseService.getLicenseFileKeys(licenseId, username, permissions);
+
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.TEXT_PLAIN)
+                .contentLength(fileDetails.getContentLength())
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        String.format("attachment; filename=%s",
+                                URLEncoder.encode(fileDetails.getFileName(), StandardCharsets.UTF_8)
+                        )
+                )
+                .body(new ByteArrayResource(fileDetails.getContent()));
+
+    }
 }
