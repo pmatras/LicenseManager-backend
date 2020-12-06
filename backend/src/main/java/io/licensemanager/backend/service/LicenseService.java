@@ -1,8 +1,10 @@
 package io.licensemanager.backend.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import io.licensemanager.backend.configuration.setup.ROLES_PERMISSIONS;
 import io.licensemanager.backend.entity.Customer;
 import io.licensemanager.backend.entity.License;
@@ -22,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -227,6 +230,72 @@ public class LicenseService {
 
     public boolean reactivateLicense(final Long licenseId, final String username, final Set<ROLES_PERMISSIONS> permissions) {
         return changeActiveStatus(licenseId, username, permissions, true);
+    }
+
+    private String changeJsonStringFieldValue(final String jsonString, final String field, final String value) {
+        ObjectMapper jsonMapper = new ObjectMapper();
+        try {
+            JsonNode jsonObject = jsonMapper.readTree(jsonString);
+            ObjectNode json = (ObjectNode) jsonObject;
+            json.set(field, TextNode.valueOf(value));
+
+            return json.toString();
+        } catch (JsonProcessingException e) {
+            logger.error("Cannot change string field value, reason - {}", e.getMessage());
+        }
+
+        return jsonString;
+    }
+
+    public boolean extendLicenseExpirationDate(final Long licenseId, final String expirationDate,
+                                               final String username, final Set<ROLES_PERMISSIONS> permissions) {
+        logger.debug("Changing license's expiration date");
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isEmpty()) {
+            logger.error("Cannot find user with passed username");
+            return false;
+        }
+
+        Optional<License> license;
+        if (permissions.contains(ROLES_PERMISSIONS.ALL) || permissions.contains(ROLES_PERMISSIONS.EDIT_ALL_LICENSES)) {
+            license = licenseRepository.findById(licenseId);
+        } else {
+            license = licenseRepository.findByIdAndCreatorIs(licenseId, user.get());
+        }
+
+        if (license.isPresent()) {
+            License licenseToExtend = license.get();
+            LocalDateTime extendedExpirationDate = null;
+            try {
+                extendedExpirationDate = LocalDateTime.parse(expirationDate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            } catch (DateTimeParseException e) {
+                logger.error("Failed to parse requested expiration date, reason - {}, license's expiration date won't be extended",
+                        e.getMessage()
+                );
+            }
+            if (extendedExpirationDate != null) {
+                LocalDateTime currentDate = LocalDateTime.now();
+                licenseToExtend.setExpirationDate(extendedExpirationDate);
+                licenseToExtend.setIsExpired(!currentDate.isBefore(extendedExpirationDate));
+
+                PublicKey publicKey = licenseToExtend.getUsedTemplate().getPublicKey();
+                PrivateKey privateKey = licenseToExtend.getUsedTemplate().getPrivateKey();
+                byte[] encryptedFile = licenseToExtend.getLicenseFile();
+                String decryptedFile = CryptoUtils.decrypt(encryptedFile, publicKey);
+                String updatedFile = changeJsonStringFieldValue(decryptedFile, "expirationDate", extendedExpirationDate.toString());
+                byte[] updatedEncrypted = CryptoUtils.encrypt(updatedFile, publicKey);
+                String updatedLicenseKey = CryptoUtils.signContent(updatedEncrypted, privateKey);
+                licenseToExtend.setLicenseFile(updatedEncrypted);
+                licenseToExtend.setLicenseKey(updatedLicenseKey);
+                licenseRepository.save(licenseToExtend);
+
+                return true;
+            }
+        }
+        logger.error("Failed to change license's expiration date - requested license doesn't exist");
+
+        return false;
+
     }
 
     @Transactional

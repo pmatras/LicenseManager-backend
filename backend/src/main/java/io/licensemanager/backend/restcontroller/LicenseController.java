@@ -112,4 +112,20 @@ public class LicenseController {
 
     }
 
+    @PutMapping(path = "/expiration_date")
+    public ResponseEntity<?> extendLicenseExpirationDate(@RequestParam(name = "license_id") final Long licenseId,
+                                                         @Valid @RequestBody final String expirationDate,
+                                                         final Authentication authentication) {
+        String username = AuthenticationUtils.parseUsername(authentication);
+        Set<ROLES_PERMISSIONS> permissions = AuthenticationUtils.parsePermissions(authentication);
+
+        return licenseService.extendLicenseExpirationDate(licenseId, expirationDate, username, permissions) ?
+                ResponseEntity
+                        .ok(Collections.singletonMap("message", "License expiration date extended")) :
+                ResponseEntity
+                        .badRequest()
+                        .body(Collections.singletonMap("message", "Failed to extend license's expiration date"));
+
+    }
+
 }
