@@ -37,7 +37,7 @@ public class User {
 
     @ManyToMany(
             cascade = {CascadeType.MERGE},
-            fetch = FetchType.LAZY
+            fetch = FetchType.EAGER
     )
     @JoinTable(
             name = "users_roles",
