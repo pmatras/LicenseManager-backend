@@ -6,10 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import io.licensemanager.backend.configuration.setup.ROLES_PERMISSIONS;
-import io.licensemanager.backend.entity.Customer;
-import io.licensemanager.backend.entity.License;
-import io.licensemanager.backend.entity.LicenseTemplate;
-import io.licensemanager.backend.entity.User;
+import io.licensemanager.backend.entity.*;
+import io.licensemanager.backend.event.publisher.LicenseGenerationEventPublisher;
 import io.licensemanager.backend.model.FileDetails;
 import io.licensemanager.backend.model.LicensesStatus;
 import io.licensemanager.backend.model.response.LicenseFileContentResponse;
@@ -45,6 +43,7 @@ public class LicenseService {
     private final LicenseTemplateRepository licenseTemplateRepository;
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
+    private final LicenseGenerationEventPublisher eventPublisher;
 
     @Transactional
     public List<License> getLicensesList(final String username, final Set<ROLES_PERMISSIONS> permissions) {
@@ -151,6 +150,14 @@ public class LicenseService {
         String licenseKey = CryptoUtils.signContent(encryptedContent, template.getPrivateKey());
         license.setLicenseKey(licenseKey);
         license.setLicenseFile(encryptedContent);
+
+        boolean isAdmin = creator.get().getRoles()
+                .stream()
+                .map(Role::getName)
+                .anyMatch("ADMIN"::equals);
+        if (!isAdmin) {
+            eventPublisher.publishEvent(creator.get(), license);
+        }
 
         return Optional.of(licenseRepository.save(license));
     }

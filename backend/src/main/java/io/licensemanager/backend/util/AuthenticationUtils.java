@@ -1,6 +1,7 @@
 package io.licensemanager.backend.util;
 
 import io.licensemanager.backend.configuration.setup.ROLES_PERMISSIONS;
+import io.licensemanager.backend.entity.User;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.Authentication;
@@ -36,5 +37,20 @@ public class AuthenticationUtils {
                         StringUtils.removeStart(authority.getAuthority(), ROLE_PREFIX)
                 )
                 .collect(Collectors.toSet());
+    }
+
+    public static Set<ROLES_PERMISSIONS> getUserPermissions(final User user) {
+        return
+                user.getRoles().stream()
+                        .flatMap(role -> role.getPermissions().stream()
+                                .map(permission ->
+                                        {
+                                            String parsed = StringUtils.removeStart(permission, PERMISSION_PREFIX);
+                                            return EnumUtils.getEnum(ROLES_PERMISSIONS.class, parsed, null);
+                                        }
+                                )
+                        )
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet());
     }
 }

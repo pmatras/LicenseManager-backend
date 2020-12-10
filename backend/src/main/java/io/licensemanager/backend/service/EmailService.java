@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -28,6 +29,17 @@ public class EmailService {
         emailMessage.setFrom(NO_REPLY_EMAIL_ADDRESS);
         emailMessage.setTo(recipient);
         emailMessage.setSubject(subject);
+        emailMessage.setText(content);
+
+        mailSender.send(emailMessage);
+    }
+
+    public void sendEmailMessageToMultipleRecipients(final String subject, final List<String> recipients, final String content) {
+        SimpleMailMessage emailMessage = new SimpleMailMessage();
+        emailMessage.setFrom(NO_REPLY_EMAIL_ADDRESS);
+        emailMessage.setTo(recipients.toArray(new String[recipients.size()]));
+        emailMessage.setSubject(subject);
+        emailMessage.setCc();
         emailMessage.setText(content);
 
         mailSender.send(emailMessage);

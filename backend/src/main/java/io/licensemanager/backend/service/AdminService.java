@@ -198,4 +198,17 @@ public class AdminService {
                 .map(ROLES_PERMISSIONS::name)
                 .collect(Collectors.toList());
     }
+
+    public List<String> getNotificationsAllEmailsList() {
+        return userRepository.findAll().stream()
+                .filter(user -> user.getIsActive() &&
+                        user.getRoles().stream()
+                                .map(Role::getName)
+                                .anyMatch("ADMIN"::equals) ||
+                        user.getRoles().stream()
+                                .flatMap(role -> role.getPermissions().stream())
+                                .anyMatch(ROLES_PERMISSIONS.NOTIFICATIONS_ALL.name()::equals))
+                .map(User::getEmail)
+                .collect(Collectors.toList());
+    }
 }
