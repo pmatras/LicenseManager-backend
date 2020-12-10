@@ -85,17 +85,19 @@ public class EmailLicenseAlert implements LicenseAlertJob {
                         getLicensesForUser(user),
                         thresholdDays
                 );
-                StringBuilder emailBody = new StringBuilder(emailAlertHeader);
-                licenses.forEach(license ->
-                        emailBody.append(String.format("<tr><td>%s</td><td>%s</td><td>%s</td></tr>",
-                                license.getName(),
-                                license.getCustomer().getName(),
-                                license.getExpirationDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
-                        ))
-                );
-                emailBody.append("</table>");
-                emailService.sendHtmlEmailMessage("License(s) expiration", user.getEmail(), emailBody.toString());
-                sentEmails.getAndIncrement();
+                if (!licenses.isEmpty()) {
+                    StringBuilder emailBody = new StringBuilder(emailAlertHeader);
+                    licenses.forEach(license ->
+                            emailBody.append(String.format("<tr><td>%s</td><td>%s</td><td>%s</td></tr>",
+                                    license.getName(),
+                                    license.getCustomer().getName(),
+                                    license.getExpirationDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+                            ))
+                    );
+                    emailBody.append("</table>");
+                    emailService.sendHtmlEmailMessage("License(s) expiration", user.getEmail(), emailBody.toString());
+                    sentEmails.getAndIncrement();
+                }
             }
         });
 
