@@ -163,7 +163,8 @@ public class CustomersController {
                         .ok(Collections.singletonMap("message", "Customer successfully deleted")) :
                 ResponseEntity
                         .badRequest()
-                        .body(Collections.singletonMap("message", "Failed to delete customer"));
+                        .body(Collections.singletonMap("message",
+                                "Some license(s) are generated for this customer or customer doesn't exist"));
     }
 
     @PutMapping(path = "/edit_group")

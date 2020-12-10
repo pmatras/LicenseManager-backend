@@ -6,6 +6,7 @@ import io.licensemanager.backend.entity.CustomerGroup;
 import io.licensemanager.backend.entity.User;
 import io.licensemanager.backend.repository.CustomerGroupRepository;
 import io.licensemanager.backend.repository.CustomerRepository;
+import io.licensemanager.backend.repository.LicenseRepository;
 import io.licensemanager.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +32,7 @@ public class CustomersService {
     private final CustomerRepository customerRepository;
     private final CustomerGroupRepository customerGroupRepository;
     private final UserRepository userRepository;
+    private final LicenseRepository licenseRepository;
 
     private List<Customer> filterCustomersGroups(List<Customer> customers, final User creator) {
         return customers.stream()
@@ -175,7 +177,9 @@ public class CustomersService {
             if (customerGroups != null) {
                 logger.debug("Changing customer's groups to requested ones");
                 Set<CustomerGroup> groups = customerGroupRepository.findAllByCreatorIsAndNameIn(creator.get(), customerGroups);
-                customer.setGroups(groups);
+                Set<CustomerGroup> expandedGroups = customer.getGroups();
+                expandedGroups.addAll(groups);
+                customer.setGroups(expandedGroups);
             }
 
             return Optional.of(customerRepository.save(customer));
@@ -199,6 +203,11 @@ public class CustomersService {
                         customerRepository.findById(customerId) :
                         customerRepository.findByCreatorIsAndId(creator.get(), customerId);
         if (customer.isPresent()) {
+            if (licenseRepository.existsByCustomerIs(customer.get())) {
+                logger.error("Cannot delete customer %s - some license(s) are generated for this customer",
+                        customer.get().getName());
+                return false;
+            }
             customerRepository.delete(customer.get());
             return true;
         }
