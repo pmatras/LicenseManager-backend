@@ -378,18 +378,11 @@ public class LicenseService {
 
     }
 
+    @Transactional
     public LicensesStatistics getLicensesStats(final String username, final Set<ROLES_PERMISSIONS> permissions) {
         logger.debug("Getting licenses statistics");
-        Optional<User> user = userRepository.findByUsername(username);
-        if (user.isEmpty()) {
-            logger.error("Cannot find user with passed username");
-        }
 
-        if (permissions.contains(ROLES_PERMISSIONS.ALL) || permissions.contains(ROLES_PERMISSIONS.DELETE_ALL_LICENSES)) {
-            return LicensesStatisticsGenerator.generateStats(licenseRepository.findAll());
-        }
-
-        return LicensesStatisticsGenerator.generateStats(licenseRepository.findAllByCreatorIs(user.get()));
+        return LicensesStatisticsGenerator.generateStats(getLicensesList(username, permissions));
     }
 
     @Transactional
