@@ -24,8 +24,10 @@ public class LicenseGenerationEvent extends ApplicationEvent {
     }
 
     public String getMessage() {
-        return String.format("User @%s just generated license %s for customer %s",
-                creator.getUsername(),
+        return String.format("User %s %s with e-mail %s just generated license %s for customer %s",
+                creator.getFirstName(),
+                creator.getLastName(),
+                creator.getEmail(),
                 createdLicense.getName(),
                 createdLicense.getCustomer().getName()
         );
