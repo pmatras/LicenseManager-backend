@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -155,6 +156,7 @@ public class AdminService {
             if (!roles.isEmpty()) {
                 User userToAssign = user.get();
                 userToAssign.setRoles(roles);
+                userToAssign.setLastEditTime(LocalDateTime.now());
                 logger.debug("Assigning roles {} to user {}", rolesToAssign.toString(), userToAssign.getUsername());
 
                 return userRepository.save(userToAssign).getId() == userId;
