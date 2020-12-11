@@ -2,14 +2,17 @@ package io.licensemanager.backend.service;
 
 import io.licensemanager.backend.entity.ActivationToken;
 import io.licensemanager.backend.entity.User;
+import io.licensemanager.backend.model.OperationStatus;
 import io.licensemanager.backend.repository.ActivationTokenRepository;
 import io.licensemanager.backend.repository.UserRepository;
 import io.licensemanager.backend.util.TimeTokensParser;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,6 +31,7 @@ public class UserAccountService {
     private final ActivationTokenRepository activationTokenRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${activation-token.ttl:3D}")
     public void setActivationTokenTTLValue(String tokenTTLValue) {
@@ -109,5 +113,44 @@ public class UserAccountService {
         }
 
         return Optional.empty();
+    }
+
+    public OperationStatus editUserAccount(final String currentUsername, final Optional<String> username,
+                                           final Optional<String> password) {
+        logger.debug("Editing user account");
+        Optional<User> user = userRepository.findByUsername(currentUsername);
+        if (user.isEmpty()) {
+            logger.error("User with passed username doesn't exist");
+            return new OperationStatus(false, "Requested user doesn't exist");
+        }
+
+        if (username.isEmpty() && password.isEmpty()) {
+            logger.error("Neither username nor password are specified, aborting operation");
+            return new OperationStatus(false, "Nothing to change");
+        }
+
+        User userToEdit = user.get();
+
+        if (username.isPresent()) {
+            if (!username.get().equals(currentUsername) && userRepository.existsByUsername(username.get())) {
+                logger.error("Username is already taken");
+                return new OperationStatus(false, "Username is already taken");
+            }
+            if (StringUtils.isBlank(username.get())) {
+                logger.error("Username cannot be blank");
+                return new OperationStatus(false, "Username cannot be blank");
+            }
+            userToEdit.setUsername(username.get());
+        }
+        if (password.isPresent()) {
+            if (StringUtils.isBlank(password.get())) {
+                logger.error("Password cannot be blank");
+                return new OperationStatus(false, "Password cannot be blank!");
+            }
+            userToEdit.setPassword(passwordEncoder.encode(password.get()));
+        }
+        userRepository.save(userToEdit);
+
+        return new OperationStatus(true, "User account successfully updated, refresh page to see effects");
     }
 }
