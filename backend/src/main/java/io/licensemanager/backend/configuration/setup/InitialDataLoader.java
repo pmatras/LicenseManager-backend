@@ -54,7 +54,7 @@ public class InitialDataLoader {
     }
 
     private void createDefaultAdminUserIfNotExists(Set<Role> adminRoles) {
-        Optional<User> user = userRepository.findByUsername(ADMIN_USERNAME);
+        Optional<User> user = userRepository.findById(1L);
         if (user.isEmpty()) {
             logger.info("Creating default admin user in system");
             User adminUser = new User();
