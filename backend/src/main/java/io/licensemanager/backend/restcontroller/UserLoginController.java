@@ -1,7 +1,9 @@
 package io.licensemanager.backend.restcontroller;
 
 import io.licensemanager.backend.configuration.authentication.service.AuthorizationTokenService;
+import io.licensemanager.backend.configuration.setup.Operation;
 import io.licensemanager.backend.entity.User;
+import io.licensemanager.backend.event.publisher.SystemOperationEventPublisher;
 import io.licensemanager.backend.model.request.UserLoginRequest;
 import io.licensemanager.backend.model.response.UserLoginResponse;
 import io.licensemanager.backend.service.UserService;
@@ -16,7 +18,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.validation.Valid;
 import java.util.Collections;
@@ -33,6 +38,7 @@ public class UserLoginController {
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final AuthorizationTokenService tokenService;
+    private final SystemOperationEventPublisher systemOperationEventPublisher;
 
     @PostMapping(path = "/login")
     public ResponseEntity<?> loginUser(@Valid @RequestBody UserLoginRequest loginRequest,
@@ -49,8 +55,12 @@ public class UserLoginController {
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
                             loginRequest.getPassword())
             );
+            systemOperationEventPublisher.publishEvent(loginRequest.getUsername(), Operation.LOGIN,
+                    "User successfully authenticated");
         } catch (Exception e) {
             logger.error("Failed to authenticate user, {}", e.getMessage().toLowerCase());
+            systemOperationEventPublisher.publishEvent(loginRequest.getUsername(), Operation.FAILED_LOGIN,
+                    e.getMessage());
 
             return ResponseEntity
                     .badRequest()
