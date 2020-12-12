@@ -5,9 +5,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import io.licensemanager.backend.configuration.setup.Operation;
 import io.licensemanager.backend.configuration.setup.ROLES_PERMISSIONS;
 import io.licensemanager.backend.entity.*;
 import io.licensemanager.backend.event.publisher.LicenseGenerationEventPublisher;
+import io.licensemanager.backend.event.publisher.SystemOperationEventPublisher;
 import io.licensemanager.backend.model.FileDetails;
 import io.licensemanager.backend.model.LicensesStatus;
 import io.licensemanager.backend.model.response.LicenseFileContentResponse;
@@ -44,6 +46,7 @@ public class LicenseService {
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
     private final LicenseGenerationEventPublisher eventPublisher;
+    private final SystemOperationEventPublisher systemOperationEventPublisher;
 
     @Transactional
     public List<License> getLicensesList(final String username, final Set<ROLES_PERMISSIONS> permissions) {
@@ -158,6 +161,9 @@ public class LicenseService {
         if (!isAdmin) {
             eventPublisher.publishEvent(creator.get(), license);
         }
+        systemOperationEventPublisher.publishEvent(creatorsUsername, Operation.LICENSE_GENERATION,
+                String.format("License %s for %s generated", license.getName(), license.getCustomer().getName())
+        );
 
         return Optional.of(licenseRepository.save(license));
     }
@@ -276,6 +282,7 @@ public class LicenseService {
 
         if (license.isPresent()) {
             License licenseToExtend = license.get();
+            LocalDateTime currentExpirationDate = licenseToExtend.getExpirationDate();
             LocalDateTime extendedExpirationDate = null;
             try {
                 extendedExpirationDate = LocalDateTime.parse(expirationDate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
@@ -299,6 +306,11 @@ public class LicenseService {
                 licenseToExtend.setLicenseFile(updatedEncrypted);
                 licenseToExtend.setLicenseKey(updatedLicenseKey);
                 licenseRepository.save(licenseToExtend);
+
+                systemOperationEventPublisher.publishEvent(username, Operation.LICENSE_EDITION,
+                        String.format("License's %s for %s expiration date changed from %s to %s", licenseToExtend.getName(),
+                                licenseToExtend.getCustomer().getName(), currentExpirationDate, extendedExpirationDate)
+                );
 
                 return true;
             }
@@ -333,6 +345,10 @@ public class LicenseService {
             file.setContentLength(licenseToDownload.getLicenseFile().length);
             file.setContent(licenseToDownload.getLicenseFile());
 
+            systemOperationEventPublisher.publishEvent(username, Operation.LICENSE_DOWNLOAD,
+                    String.format("License's %s file for %s downloaded", licenseToDownload.getName(),
+                            licenseToDownload.getCustomer().getName())
+            );
             return file;
         }
         logger.error("License with requested id doesn't exist");

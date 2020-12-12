@@ -1,7 +1,9 @@
 package io.licensemanager.backend.service;
 
+import io.licensemanager.backend.configuration.setup.Operation;
 import io.licensemanager.backend.entity.ActivationToken;
 import io.licensemanager.backend.entity.User;
+import io.licensemanager.backend.event.publisher.SystemOperationEventPublisher;
 import io.licensemanager.backend.model.OperationStatus;
 import io.licensemanager.backend.repository.ActivationTokenRepository;
 import io.licensemanager.backend.repository.UserRepository;
@@ -32,6 +34,7 @@ public class UserAccountService {
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final SystemOperationEventPublisher systemOperationEventPublisher;
 
     @Value("${activation-token.ttl:3D}")
     public void setActivationTokenTTLValue(String tokenTTLValue) {
@@ -130,6 +133,8 @@ public class UserAccountService {
         }
 
         User userToEdit = user.get();
+        boolean usernameChanged = false;
+        boolean passwordChanged = false;
 
         if (username.isPresent()) {
             if (!username.get().equals(currentUsername) && userRepository.existsByUsername(username.get())) {
@@ -141,6 +146,7 @@ public class UserAccountService {
                 return new OperationStatus(false, "Username cannot be blank");
             }
             userToEdit.setUsername(username.get());
+            usernameChanged = true;
         }
         if (password.isPresent()) {
             if (StringUtils.isBlank(password.get())) {
@@ -148,8 +154,16 @@ public class UserAccountService {
                 return new OperationStatus(false, "Password cannot be blank!");
             }
             userToEdit.setPassword(passwordEncoder.encode(password.get()));
+            passwordChanged = true;
         }
         userRepository.save(userToEdit);
+
+        StringBuilder message = new StringBuilder(usernameChanged ?
+                String.format("Username changed from %s to %s", currentUsername, username.get()) :
+                ""
+        );
+        message.append(passwordChanged ? ", password changed" : ", password left intact");
+        systemOperationEventPublisher.publishEvent(currentUsername, Operation.ACCOUNT_EDITION, message.toString());
 
         return new OperationStatus(true, "User account successfully updated, refresh page to see effects");
     }

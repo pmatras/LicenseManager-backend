@@ -1,6 +1,9 @@
 package io.licensemanager.backend.restcontroller;
 
 import io.licensemanager.backend.configuration.authentication.service.AuthorizationTokenService;
+import io.licensemanager.backend.configuration.setup.Operation;
+import io.licensemanager.backend.event.publisher.SystemOperationEventPublisher;
+import io.licensemanager.backend.util.AuthenticationUtils;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,16 +30,19 @@ public class UserLogoutController {
     private final String CLEAR_SITE_DATA_HEADER = "Clear-Site-Data";
 
     private final AuthorizationTokenService tokenService;
+    private final SystemOperationEventPublisher systemOperationEventPublisher;
 
     @PostMapping(path = "/logout")
-    public ResponseEntity<?> logoutUser(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> logoutUser(final Authentication authentication,
+                                        HttpServletRequest request, HttpServletResponse response) {
         tokenService.purgeAuthorizationToken(request);
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = AuthenticationUtils.parseUsername(authentication);
         if (authentication != null) {
             new SecurityContextLogoutHandler().logout(request, response, authentication);
         }
         SecurityContextHolder.getContext().setAuthentication(null);
+        systemOperationEventPublisher.publishEvent(username, Operation.LOGOUT, "User signed out");
 
         return ResponseEntity
                 .ok()
