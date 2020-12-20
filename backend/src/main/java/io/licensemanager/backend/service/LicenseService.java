@@ -420,6 +420,7 @@ public class LicenseService {
 
     }
 
+    @Transactional
     public CustomersLicensesStatistics getCustomersLicensesStats(final Long customerId, final String username,
                                                                  final Set<ROLES_PERMISSIONS> permissions) {
         logger.debug("Getting licenses statistics for customer");
