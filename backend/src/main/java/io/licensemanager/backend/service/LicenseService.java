@@ -12,6 +12,7 @@ import io.licensemanager.backend.event.publisher.LicenseGenerationEventPublisher
 import io.licensemanager.backend.event.publisher.SystemOperationEventPublisher;
 import io.licensemanager.backend.model.FileDetails;
 import io.licensemanager.backend.model.LicensesStatus;
+import io.licensemanager.backend.model.response.CustomersLicensesStatistics;
 import io.licensemanager.backend.model.response.LicenseFileContentResponse;
 import io.licensemanager.backend.model.response.LicensesStatistics;
 import io.licensemanager.backend.repository.CustomerRepository;
@@ -399,6 +400,32 @@ public class LicenseService {
         logger.debug("Getting licenses statistics");
 
         return LicensesStatisticsGenerator.generateStats(getLicensesList(username, permissions));
+    }
+
+    private List<License> getLicensesListForCustomer(final Long customerId, final String username,
+                                                     final Set<ROLES_PERMISSIONS> permissions) {
+        logger.debug("Getting licenses list for customer");
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isEmpty()) {
+            logger.error("Cannot find user who requested licenses list for customer");
+            return Collections.emptyList();
+        }
+        User creator = user.get();
+        if (permissions.contains(ROLES_PERMISSIONS.VIEW_ALL_LICENSES)
+                || permissions.contains(ROLES_PERMISSIONS.ALL)) {
+            return licenseRepository.findAllByCustomerId(customerId);
+        }
+
+        return licenseRepository.findAllByCustomerIdAndCreatorIs(customerId, creator);
+
+    }
+
+    public CustomersLicensesStatistics getCustomersLicensesStats(final Long customerId, final String username,
+                                                                 final Set<ROLES_PERMISSIONS> permissions) {
+        logger.debug("Getting licenses statistics for customer");
+
+        return LicensesStatisticsGenerator.generateStatsForCustomer(getLicensesListForCustomer(customerId,
+                username, permissions));
     }
 
     @Transactional

@@ -17,4 +17,8 @@ public interface LicenseRepository extends JpaRepository<License, Long> {
     boolean existsByUsedTemplateIs(final LicenseTemplate template);
 
     boolean existsByCustomerIs(final Customer customer);
+
+    List<License> findAllByCustomerId(final Long customerId);
+
+    List<License> findAllByCustomerIdAndCreatorIs(final Long customerId, final User creator);
 }

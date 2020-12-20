@@ -186,4 +186,15 @@ public class LicenseController {
                 licenseService.getLicensesStats(username, permissions)
         );
     }
+
+    @GetMapping(path = "/customer_stats")
+    public ResponseEntity<?> getLicensesStatisticsForCustomer(@RequestParam(name = "customer_id") final Long customerId,
+                                                              final Authentication authentication) {
+        String username = AuthenticationUtils.parseUsername(authentication);
+        Set<ROLES_PERMISSIONS> permissions = AuthenticationUtils.parsePermissions(authentication);
+
+        return ResponseEntity.ok(
+                licenseService.getCustomersLicensesStats(customerId, username, permissions)
+        );
+    }
 }

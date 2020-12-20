@@ -1,6 +1,7 @@
 package io.licensemanager.backend.util;
 
 import io.licensemanager.backend.entity.License;
+import io.licensemanager.backend.model.response.CustomersLicensesStatistics;
 import io.licensemanager.backend.model.response.LicensesStatistics;
 
 import java.time.temporal.ChronoUnit;
@@ -58,6 +59,27 @@ public class LicensesStatisticsGenerator {
         licensesStatistics.setByExpirationDateMonths(
                 licenses.stream()
                         .collect(Collectors.groupingBy(license -> license.getExpirationDate().truncatedTo(ChronoUnit.DAYS).withDayOfMonth(1), Collectors.counting()))
+        );
+
+        return licensesStatistics;
+    }
+
+    public static CustomersLicensesStatistics generateStatsForCustomer(final List<License> licenses) {
+        CustomersLicensesStatistics licensesStatistics = new CustomersLicensesStatistics();
+
+        licensesStatistics.setTotalLicensesCount(
+                licenses.stream()
+                        .count()
+        );
+        licensesStatistics.setValidLicensesCount(
+                licenses.stream()
+                        .filter(license -> !license.getIsExpired())
+                        .count()
+        );
+        licensesStatistics.setExpiredLicensesCount(
+                licenses.stream()
+                        .filter(license -> license.getIsExpired())
+                        .count()
         );
 
         return licensesStatistics;
