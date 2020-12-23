@@ -10,6 +10,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @Data
 public class EditAccountRequest {
+    private String currentPassword = "";
     private Optional<String> username = Optional.empty();
     private Optional<String> password = Optional.empty();
 }

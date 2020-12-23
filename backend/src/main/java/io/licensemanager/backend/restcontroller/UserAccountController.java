@@ -56,7 +56,8 @@ public class UserAccountController {
                                              final Authentication authentication) {
         String username = AuthenticationUtils.parseUsername(authentication);
 
-        OperationStatus status = accountService.editUserAccount(username, request.getUsername(), request.getPassword());
+        OperationStatus status = accountService.editUserAccount(username, request.getCurrentPassword(),
+                request.getUsername(), request.getPassword());
 
         return status.getStatus() ?
                 ResponseEntity

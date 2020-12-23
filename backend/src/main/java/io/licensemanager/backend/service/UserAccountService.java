@@ -118,13 +118,18 @@ public class UserAccountService {
         return Optional.empty();
     }
 
-    public OperationStatus editUserAccount(final String currentUsername, final Optional<String> username,
-                                           final Optional<String> password) {
+    public OperationStatus editUserAccount(final String currentUsername, final String currentPassword,
+                                           final Optional<String> username, final Optional<String> password) {
         logger.debug("Editing user account");
         Optional<User> user = userRepository.findByUsername(currentUsername);
         if (user.isEmpty()) {
             logger.error("User with passed username doesn't exist");
             return new OperationStatus(false, "Requested user doesn't exist");
+        }
+
+        if (!passwordEncoder.matches(currentPassword, user.get().getPassword())) {
+            logger.error("Wrong password provided, aborting");
+            return new OperationStatus(false, "Wrong password");
         }
 
         if (username.isEmpty() && password.isEmpty()) {
