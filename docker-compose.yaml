@@ -1,12 +1,14 @@
-version: "3"
+version: '3'
 
 networks:
   backend:
     labels:
       description: backend services network
- 
-services:
+  api:
+    labels:
+      description: network for sharing server's container
 
+services:
   postgres:
     image: postgres:13
     container_name: postgres
@@ -29,7 +31,7 @@ services:
     ports:
       - 9802:1025
       - 9803:8025
-    environment: 
+    environment:
       - MH_HOSTNAME=mail.license-manager
       - MH_STORAGE=maildir
       - MH_MAILDIR_PATH=mailhog/e-mails
@@ -40,7 +42,7 @@ services:
 
   backend:
     build: ./backend
-    image: license-manager/backend:0.0.1
+    image: license-manager/backend:1.0.0
     container_name: backend
     ports:
       - 9800:9800
@@ -60,5 +62,19 @@ services:
     hostname: license-manager-backend
     networks:
       - backend
+      - api
     restart: always
-    
+
+  reverse_proxy:
+    image: nginx:1.19.6-alpine
+    container_name: reverse-proxy
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+    hostname: license-manager-reverse-proxy
+    networks:
+      - api
+    restart: always
