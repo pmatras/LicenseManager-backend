@@ -182,16 +182,20 @@ public class LicenseService {
         fields.forEach((fieldName, fieldType) -> {
             switch (fieldType.getSimpleName()) {
                 case "String":
-                    jsonObject.put(fieldName, (String) values.get(fieldName));
+                    jsonObject.put(fieldName, String.valueOf(values.get(fieldName)));
                     break;
                 case "Integer":
                     jsonObject.put(fieldName, (Integer) values.get(fieldName));
                     break;
                 case "Long":
-                    jsonObject.put(fieldName, (Long) values.get(fieldName));
+                    try {
+                        jsonObject.put(fieldName, (Long) values.get(fieldName));
+                    } catch (ClassCastException e) {
+                        jsonObject.put(fieldName, ((Integer) values.get(fieldName)).longValue());
+                    }
                     break;
                 case "Float":
-                    jsonObject.put(fieldName, (Float) values.get(fieldName));
+                    jsonObject.put(fieldName, ((Double) values.get(fieldName)).floatValue());
                     break;
                 case "Double":
                     jsonObject.put(fieldName, (Double) values.get(fieldName));
@@ -200,7 +204,7 @@ public class LicenseService {
                     jsonObject.put(fieldName, (Boolean) values.get(fieldName));
                     break;
                 case "Character":
-                    jsonObject.put(fieldName, (Character) values.get(fieldName));
+                    jsonObject.put(fieldName, String.valueOf(values.get(fieldName)).substring(0, 1));
                     break;
             }
         });
