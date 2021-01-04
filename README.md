@@ -65,7 +65,10 @@ If you want to run application locally, you have to define environment variables
 cors.clients.urls=https://localhost:9804, https://localhost:9805
 ```
 
-If directive is not specified or commented the default value is '\*' - allows all origins
+If directive is not specified or commented the default value is '\*' - allows all origins.
+
+Note that frontend application for License Manager is CSR (Client-Side Rendered), so you have to make sure that client's browser CORS preflight request won't be rejected by server by specifying
+proper allowed domains or by allowing all domains.
 
 4. You have to note, that CSRF is enabled in Spring Security, excepts endpoints responsible for registration, account activation and login - in response to this endpoints you will receive cookie with **XSRF-TOKEN** value. To make further requests to secured enpoints you need to get this XSRF token value from cookie and add to every request
    header with name `X-XSRF-TOKEN` and value which you previously got in cookie.
